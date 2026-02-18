@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AmbulanteTec - Produtos</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <link href="assets/css/style.css" rel="stylesheet" />
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabaseConfig.js"></script>
+    <script src="assets/js/services/productService.js"></script>
+    <script src="assets/js/services/authService.js"></script>
+    <script src="assets/js/app.js" defer></script>
+    <script src="assets/js/components.js" defer></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0071e3",
+                        "background-light": "#f5f5f7",
+                        "background-dark": "#000000",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1c1c1e",
+                        "text-primary-light": "#1d1d1f",
+                        "text-primary-dark": "#f5f5f7",
+                        "text-secondary-light": "#86868b",
+                        "text-secondary-dark": "#86868b",
+                        "success": "#1d9f38",
+                    }
+                },
+            },
+        };
+    </script>
+</head>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark font-display antialiased min-h-screen pb-24">
+    <div
+        class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
+        <div class="container-responsive px-5 pt-12 pb-4">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-4xl font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">
+                    Produtos
+                </h1>
+                <button onclick="window.location.href='add-edit-product.html'"
+                    class="bg-primary hover:bg-blue-600 text-white font-medium rounded-full px-4 py-2 text-sm flex items-center transition-colors shadow-sm">
+                    <span class="material-icons-round text-sm mr-1">add</span>
+                    Novo
+                </button>
+            </div>
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="material-icons-round text-gray-400 dark:text-gray-500">search</span>
+                </div>
+                <input id="product-search"
+                    class="block w-full pl-10 pr-3 py-2.5 border-none rounded-xl bg-gray-200/60 dark:bg-gray-800 text-text-primary-light dark:text-text-primary-dark placeholder-gray-500 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-gray-900 transition-all duration-200 text-base"
+                    placeholder="Buscar produtos..." type="text" />
+            </div>
+        </div>
+        <div class="container-responsive">
+            <div class="flex overflow-x-auto no-scrollbar py-2 px-5 space-x-3 pb-4">
+                <button data-category="all"
+                    class="category-filter flex-shrink-0 bg-text-primary-light dark:bg-white text-white dark:text-black font-medium px-5 py-2 rounded-full text-sm transition-transform active:scale-95">
+                    Todos
+                </button>
+                <button data-category="Bebidas"
+                    class="category-filter flex-shrink-0 bg-white dark:bg-card-dark text-text-primary-light dark:text-text-primary-dark border border-gray-200 dark:border-gray-700 font-medium px-5 py-2 rounded-full text-sm transition-transform active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    Bebidas
+                </button>
+                <button data-category="Salgados,Doces"
+                    class="category-filter flex-shrink-0 bg-white dark:bg-card-dark text-text-primary-light dark:text-text-primary-dark border border-gray-200 dark:border-gray-700 font-medium px-5 py-2 rounded-full text-sm transition-transform active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    Comidas
+                </button>
+                <button data-category="Combos"
+                    class="category-filter flex-shrink-0 bg-white dark:bg-card-dark text-text-primary-light dark:text-text-primary-dark border border-gray-200 dark:border-gray-700 font-medium px-5 py-2 rounded-full text-sm transition-transform active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    Combos
+                </button>
+                <button data-category="Outros"
+                    class="category-filter flex-shrink-0 bg-white dark:bg-card-dark text-text-primary-light dark:text-text-primary-dark border border-gray-200 dark:border-gray-700 font-medium px-5 py-2 rounded-full text-sm transition-transform active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    Outros
+                </button>
+            </div>
+        </div>
+    </div>
+    <main class="container-responsive px-5 pt-4">
+        <div class="py-10 text-center">
+            <p class="text-text-secondary-light dark:text-text-secondary-dark">Carregando produtos...</p>
+        </div>
+    </main>
+    </main>
+    <!-- Botão Flutuante do Carrinho (Apenas em Modo Venda) -->
+    <div id="cart-fab" class="fixed bottom-28 right-6 z-40 hidden">
+        <button onclick="window.location.href='checkout.html'"
+            class="bg-success hover:bg-green-600 text-white h-16 w-16 rounded-full shadow-2xl flex items-center justify-center transform active:scale-95 transition-all animate-bounce-slow relative">
+            <span class="material-icons-round text-3xl">shopping_basket</span>
+            <span id="cart-count"
+                class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-6 w-6 rounded-full flex items-center justify-center border-2 border-white dark:border-background-dark">0</span>
+        </button>
+    </div>
+
+    <nav
+        class="fixed bottom-0 left-0 right-0 bg-card-light/90 dark:bg-card-dark/90 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 pb-safe pt-2 px-6 z-50">
+        <!-- Injected by components.js -->
+    </nav>
+    <div class="h-20"></div>
+
+</body>
+
+</html>

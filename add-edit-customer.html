@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AmbulanteTec - Gerenciar Cliente</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <link href="assets/css/style.css" rel="stylesheet" />
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabaseConfig.js"></script>
+    <script src="assets/js/services/customerService.js"></script>
+    <script src="assets/js/app.js" defer></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0071e3",
+                        "primary-hover": "#0077ED",
+                        "background-light": "#f5f5f7",
+                        "background-dark": "#000000",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c1c1e",
+                        "text-light": "#1d1d1f",
+                        "text-dark": "#f5f5f7",
+                        "subtext-light": "#86868b",
+                        "subtext-dark": "#86868b",
+                        "border-light": "#d2d2d7",
+                        "border-dark": "#424245",
+                    }
+                },
+            },
+        };
+    </script>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark antialiased min-h-screen relative overflow-hidden font-display">
+
+    <!-- Background Decorativo -->
+    <div aria-hidden="true" class="absolute inset-0 z-0 overflow-y-auto opacity-30 pointer-events-none">
+        <header class="p-4 flex justify-between items-center">
+            <h1 class="text-xl font-semibold opacity-20">Clientes</h1>
+        </header>
+        <main class="p-4 grid grid-cols-1 gap-4">
+            <div class="h-24 bg-gray-100 dark:bg-gray-800 rounded-2xl opacity-10"></div>
+            <div class="h-24 bg-gray-100 dark:bg-gray-800 rounded-2xl opacity-10"></div>
+        </main>
+    </div>
+
+    <!-- Modal Layout -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-custom transition-opacity"
+            onclick="window.location.href='customers.html'"></div>
+
+        <div
+            class="relative w-full max-w-lg bg-surface-light dark:bg-surface-dark rounded-apple-2xl shadow-apple overflow-hidden transform transition-all animate-fade-in flex flex-col max-h-[90vh]">
+
+            <div
+                class="px-6 py-5 border-b border-border-light dark:border-border-dark flex items-center justify-between bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-md sticky top-0 z-10">
+                <h2 class="text-xl font-semibold text-text-light dark:text-text-dark">Novo Cliente</h2>
+                <button
+                    class="text-subtext-light dark:text-subtext-dark hover:text-text-light dark:hover:text-text-dark transition-colors bg-gray-100 dark:bg-gray-800 rounded-full p-1"
+                    onclick="window.location.href='customers.html'">
+                    <span class="material-icons-round text-xl block">close</span>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto no-scrollbar space-y-8">
+                <!-- Avatar Circular -->
+                <div class="flex flex-col items-center justify-center space-y-3">
+                    <div id="customer-avatar"
+                        class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-primary flex items-center justify-center text-white font-bold text-3xl shadow-inner shrink-0 uppercase">
+                        --
+                    </div>
+                </div>
+
+                <form id="customer-form" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark ml-1"
+                            for="customer-name">
+                            Nome Completo
+                        </label>
+                        <input
+                            class="w-full bg-background-light dark:bg-black border border-transparent focus:border-primary focus:ring-0 rounded-xl px-4 py-3.5 text-text-light dark:text-text-dark placeholder-gray-400 dark:placeholder-gray-600 transition-colors text-base"
+                            id="customer-name" placeholder="Ex: Mariana Costa" type="text" required />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark ml-1"
+                            for="customer-phone">
+                            Telefone / WhatsApp
+                        </label>
+                        <input
+                            class="w-full bg-background-light dark:bg-black border border-transparent focus:border-primary focus:ring-0 rounded-xl px-4 py-3.5 text-text-light dark:text-text-dark placeholder-gray-400 dark:placeholder-gray-600 transition-colors text-base"
+                            id="customer-phone" placeholder="(00) 00000-0000" type="tel" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark ml-1"
+                            for="customer-status">
+                            Status Inicial
+                        </label>
+                        <select
+                            class="w-full bg-background-light dark:bg-black border border-transparent focus:border-primary focus:ring-0 rounded-xl px-4 py-3.5 text-text-light dark:text-text-dark appearance-none cursor-pointer text-base"
+                            id="customer-status">
+                            <option value="New">Novo Cliente</option>
+                            <option value="Active">Ativo (Com pedidos)</option>
+                            <option value="Inactive">Inativo</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <div
+                class="px-6 py-5 border-t border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark sticky bottom-0 z-10">
+                <button id="save-customer-btn"
+                    class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-4 rounded-xl shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all text-[17px]">
+                    Salvar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

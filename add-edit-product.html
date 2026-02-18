@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AmbulanteTec - Gerenciar Produto</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <link href="assets/css/style.css" rel="stylesheet" />
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabaseConfig.js"></script>
+    <script src="assets/js/services/productService.js"></script>
+    <script src="assets/js/app.js" defer></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0071e3",
+                        "primary-hover": "#0077ED",
+                        "background-light": "#f5f5f7",
+                        "background-dark": "#000000",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c1c1e",
+                        "text-light": "#1d1d1f",
+                        "text-dark": "#f5f5f7",
+                        "subtext-light": "#86868b",
+                        "subtext-dark": "#86868b",
+                        "border-light": "#d2d2d7",
+                        "border-dark": "#424245",
+                    }
+                },
+            },
+        };
+    </script>
+</head>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark antialiased min-h-screen relative overflow-hidden font-display">
+    <div aria-hidden="true" class="absolute inset-0 z-0 overflow-y-auto opacity-30 pointer-events-none">
+        <header
+            class="sticky top-0 z-10 bg-background-light/80 dark:bg-black/80 backdrop-blur-md border-b border-border-light dark:border-border-dark px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl font-semibold">Produtos</h1>
+            <button class="text-primary font-medium">Editar</button>
+        </header>
+        <main class="p-4 grid grid-cols-2 gap-4">
+            <div
+                class="bg-surface-light dark:bg-surface-dark rounded-2xl p-4 shadow-sm flex flex-col items-center text-center space-y-2">
+                <div class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full mb-2"></div>
+                <div class="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div class="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark rounded-2xl p-4 shadow-sm flex flex-col items-center text-center space-y-2">
+                <div class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full mb-2"></div>
+                <div class="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div class="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark rounded-2xl p-4 shadow-sm flex flex-col items-center text-center space-y-2">
+                <div class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full mb-2"></div>
+                <div class="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div class="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+            <div
+                class="bg-surface-light dark:bg-surface-dark rounded-2xl p-4 shadow-sm flex flex-col items-center text-center space-y-2">
+                <div class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full mb-2"></div>
+                <div class="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div class="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+        </main>
+    </div>
+    <div class="fixed inset-0 z-50 flex items-center justify-center sm:items-end sm:pb-0 md:items-center p-4">
+        <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-custom transition-opacity"></div>
+        <div
+            class="relative w-full max-w-lg md:max-w-2xl bg-surface-light dark:bg-surface-dark rounded-2xl shadow-apple overflow-hidden transform transition-all animate-fade-in flex flex-col max-h-[90vh]">
+            <div
+                class="px-6 py-5 border-b border-border-light dark:border-border-dark flex items-center justify-between bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-md sticky top-0 z-10">
+                <h2 class="text-xl font-semibold text-text-light dark:text-text-dark">Novo Produto</h2>
+                <button
+                    class="text-subtext-light dark:text-subtext-dark hover:text-text-light dark:hover:text-text-dark transition-colors bg-gray-100 dark:bg-gray-800 rounded-full p-1"
+                    onclick="window.location.href='products.html'">
+                    <span class="material-icons-round text-xl block">close</span>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto no-scrollbar space-y-8">
+                <div class="flex flex-col items-center justify-center space-y-3">
+                    <div class="relative group cursor-pointer">
+                        <div
+                            class="w-32 h-32 rounded-full bg-background-light dark:bg-black border border-border-light dark:border-border-dark flex items-center justify-center overflow-hidden transition-all group-hover:border-primary">
+                            <span class="material-icons-round text-4xl text-primary opacity-80">add_a_photo</span>
+                        </div>
+                        <div
+                            class="absolute bottom-1 right-1 bg-primary text-white rounded-full p-1.5 shadow-md flex items-center justify-center">
+                            <span class="material-icons-round text-sm">edit</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-primary font-medium cursor-pointer">Adicionar foto</p>
+                </div>
+                <form class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark ml-1"
+                            for="product-name">
+                            Nome do Produto
+                        </label>
+                        <input
+                            class="w-full bg-background-light dark:bg-black border border-transparent focus:border-primary focus:ring-0 rounded-xl px-4 py-3.5 text-text-light dark:text-text-dark placeholder-gray-400 dark:placeholder-gray-600 transition-colors text-base"
+                            id="product-name" list="product-suggestions" placeholder="Ex: Pastel de Carne"
+                            type="text" />
+                        <datalist id="product-suggestions">
+                            <!-- Bebidas -->
+                            <option value="Coca-Cola 350ml">
+                            <option value="Coca-Cola Zero 350ml">
+                            <option value="Fanta Laranja 350ml">
+                            <option value="Guaraná Antarctica 350ml">
+                            <option value="Água Mineral 500ml">
+                                <!-- Salgados (Exemplos comuns) -->
+                            <option value="Pastel de Carne">
+                            <option value="Pastel de Queijo">
+                            <option value="Pastel de Frango">
+                            <option value="Coxinha de Frango">
+                            <option value="Enroladinho de Salsicha">
+                            <option value="Kibe">
+                            <option value="Esfirra de Carne">
+                                <!-- Doces -->
+                            <option value="Brigadeiro">
+                            <option value="Bolo de Pote">
+                            <option value="Pudim">
+                        </datalist>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark ml-1"
+                                for="price">
+                                Preço
+                            </label>
+                            <div class="relative">
+                                <span
+                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-subtext-light dark:text-subtext-dark font-medium">R$</span>
+                                <input
+                                    class="w-full bg-background-light dark:bg-black border border-transparent focus:border-primary focus:ring-0 rounded-xl pl-10 pr-4 py-3.5 text-text-light dark:text-text-dark placeholder-gray-400 dark:placeholder-gray-600 transition-colors text-base font-medium"
+                                    id="price" placeholder="0,00" type="text" />
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark ml-1"
+                                for="category">
+                                Categoria
+                            </label>
+                            <div class="relative">
+                                <select
+                                    class="w-full bg-background-light dark:bg-black border border-transparent focus:border-primary focus:ring-0 rounded-xl pl-4 pr-10 py-3.5 text-text-light dark:text-text-dark transition-colors text-base appearance-none cursor-pointer"
+                                    id="category">
+                                    <option disabled="" selected="" value="">Selecione</option>
+                                    <option value="Salgados">Salgados</option>
+                                    <option value="Doces">Doces</option>
+                                    <option value="Bebidas">Bebidas</option>
+                                    <option value="Combos">Combos</option>
+                                </select>
+                                <div
+                                    class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-subtext-light dark:text-subtext-dark">
+                                    <span class="material-icons-round">expand_more</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark ml-1"
+                                for="current-stock">
+                                Estoque Atual
+                            </label>
+                            <input
+                                class="w-full bg-gray-100 dark:bg-gray-900 border border-transparent rounded-xl px-4 py-3.5 text-text-light dark:text-text-dark text-base font-medium opacity-70"
+                                id="current-stock" readonly type="number" value="0" />
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-primary ml-1" for="incoming-stock">
+                                Entrada de Estoque
+                            </label>
+                            <input
+                                class="w-full bg-blue-50 dark:bg-blue-900/20 border border-primary/20 focus:border-primary focus:ring-0 rounded-xl px-4 py-3.5 text-text-light dark:text-text-dark placeholder-gray-400 transition-colors text-base font-bold text-primary"
+                                id="incoming-stock" placeholder="+0" type="number" />
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-subtext-light dark:text-subtext-dark ml-1"
+                            for="description">
+                            Descrição <span class="text-xs font-normal opacity-70">(Opcional)</span>
+                        </label>
+                        <textarea
+                            class="w-full bg-background-light dark:bg-black border border-transparent focus:border-primary focus:ring-0 rounded-xl px-4 py-3 text-text-light dark:text-text-dark placeholder-gray-400 dark:placeholder-gray-600 transition-colors text-base resize-none"
+                            id="description" placeholder="Ingredientes principais, detalhes..." rows="3"></textarea>
+                    </div>
+                    <div class="flex items-center justify-between py-2 px-1">
+                        <div class="flex flex-col">
+                            <span class="text-base font-medium text-text-light dark:text-text-dark">Disponível em
+                                Estoque</span>
+                            <span class="text-xs text-subtext-light dark:text-subtext-dark">Ocultar produto se
+                                esgotado</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input checked="" class="sr-only peer" id="stock-status" type="checkbox" />
+                            <div
+                                class="w-11 h-6 bg-gray-200 peer-focus:outline-none dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-green-500">
+                            </div>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div
+                class="px-6 py-5 border-t border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark sticky bottom-0 z-10 flex flex-col space-y-3">
+                <button id="save-product-btn"
+                    class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-4 rounded-xl shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all text-[17px]">
+                    Salvar Produto
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

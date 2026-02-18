@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AmbulanteTec - Painel</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <link href="assets/css/style.css" rel="stylesheet" />
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabaseConfig.js"></script>
+    <script src="assets/js/services/orderService.js"></script>
+    <script src="assets/js/services/authService.js"></script>
+    <script src="assets/js/app.js" defer></script>
+    <script src="assets/js/components.js" defer></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0071e3",
+                        "background-light": "#f5f5f7",
+                        "background-dark": "#000000",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1d1d1f",
+                        "text-primary-light": "#1d1d1f",
+                        "text-primary-dark": "#f5f5f7",
+                        "text-secondary-light": "#86868b",
+                        "text-secondary-dark": "#86868b",
+                    }
+                },
+            },
+        };
+    </script>
+</head>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark font-sans antialiased pb-24 transition-colors duration-300">
+    <header
+        class="pt-12 pb-4 px-6 sticky top-0 z-20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+        <div class="container-responsive">
+            <div class="flex justify-between items-center mb-2">
+                <span
+                    class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark tracking-wide uppercase">Painel
+                    de Controle</span>
+                <div class="flex items-center space-x-3">
+                    <button class="p-2 bg-white dark:bg-card-dark rounded-full shadow-soft"
+                        onclick="window.toggleTheme()">
+                        <span class="material-icons-round text-primary block">brightness_4</span>
+                    </button>
+                    <div class="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden relative">
+                        <img alt="Profile" class="object-cover w-full h-full"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfzZQacvXdcNDD3gYUI47NvB-s6IxHRx7PnI6Dy_Vfp8JwzSNfPjHBIK4BWO7wjEPRhU5yv4D-h_l4NY0GdBDr0nH8pJkGyJCJdEm0zT6hhBjl8KdfIP5WGcPu4nc2IppVH2F8ARpL-TCrVrhqLk7aXNY0MQAjHgGJ0afVBHeQMkKqxVdsN70g8hzAPFZ1jChsOFj59pgvF5Ke6aroAs1E7puCl4jVENr1IXL8aEqJWoJG9_BaqSYgvE3eY383-XdwcLAiH2zNT3U" />
+                    </div>
+                </div>
+            </div>
+            <h1 class="text-4xl font-bold tracking-tight text-text-primary-light dark:text-text-primary-dark">
+                Olá, <span id="user-greeting-name"
+                    class="text-text-secondary-light dark:text-text-secondary-dark">...</span>
+            </h1>
+        </div>
+    </header>
+    <main class="container-responsive">
+        <section class="px-6 mt-4">
+            <p class="text-xl font-semibold mb-4 text-text-primary-light dark:text-text-primary-dark">Resumo de Hoje</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-4">
+                <div onclick="window.location.href='orders.html'"
+                    class="h-48 rounded-2xl bg-card-light dark:bg-card-dark shadow-soft p-6 flex flex-col justify-between relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-all">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl -mr-10 -mt-10">
+                    </div>
+                    <div class="relative z-10">
+                        <span
+                            class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Vendas
+                            Hoje</span>
+                        <h2 id="sales-today"
+                            class="text-4xl font-bold mt-2 text-text-primary-light dark:text-text-primary-dark">R$ 0,00
+                        </h2>
+                    </div>
+                    <div class="relative z-10 flex items-center justify-between">
+                        <div class="flex items-center text-green-600 dark:text-green-400 text-sm font-medium">
+                            <span class="material-icons-round text-lg mr-1">trending_up</span>
+                            +12% vs ontem
+                        </div>
+                        <button
+                            class="bg-gray-100 dark:bg-gray-800 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                            <span class="material-icons-round text-sm">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+                <div onclick="window.location.href='orders.html'"
+                    class="h-48 rounded-2xl bg-gray-900 text-white shadow-soft p-6 flex flex-col justify-between relative overflow-hidden cursor-pointer active:scale-[0.98] transition-all">
+                    <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/50 to-transparent">
+                    </div>
+                    <div class="relative z-10">
+                        <span class="text-sm font-medium text-gray-400 uppercase tracking-wider">Pedidos Abertos</span>
+                        <h2 id="open-orders" class="text-4xl font-bold mt-2">0</h2>
+                    </div>
+                    <div class="relative z-10">
+                        <div class="flex -space-x-2 mb-2">
+                            <!-- Avatares dinâmicos serão inseridos aqui -->
+                        </div>
+                        <p class="text-xs text-gray-400">3 pedidos para preparar agora.</p>
+                    </div>
+                </div>
+                <div onclick="window.location.href='customers.html'"
+                    class="h-48 rounded-2xl bg-white dark:bg-card-dark shadow-soft p-6 flex flex-col justify-between border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-all">
+                    <div>
+                        <span
+                            class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Clientes
+                            Atendidos</span>
+                        <h2 id="customers-today"
+                            class="text-4xl font-bold mt-2 text-text-primary-light dark:text-text-primary-dark">0</h2>
+                    </div>
+                    <div>
+                        <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 mb-2">
+                            <div id="customers-progress" class="bg-primary h-2 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Meta diária: 35
+                            clientes</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="px-6 mt-8">
+            <h2 class="text-xl font-semibold mb-4 text-text-primary-light dark:text-text-primary-dark">Acesso Rápido
+            </h2>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <button onclick="window.location.href='products.html'"
+                    class="flex flex-col items-start p-5 rounded-2xl bg-card-light dark:bg-card-dark shadow-soft hover:shadow-lg transition-shadow duration-300">
+                    <div class="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg mb-3">
+                        <span
+                            class="material-icons-round text-orange-600 dark:text-orange-400 text-2xl">add_shopping_cart</span>
+                    </div>
+                    <span class="font-semibold text-text-primary-light dark:text-text-primary-dark">Novo Pedido</span>
+                </button>
+                <button onclick="window.location.href='products.html'"
+                    class="flex flex-col items-start p-5 rounded-2xl bg-card-light dark:bg-card-dark shadow-soft hover:shadow-lg transition-shadow duration-300">
+                    <div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg mb-3">
+                        <span class="material-icons-round text-primary text-2xl">inventory_2</span>
+                    </div>
+                    <span class="font-semibold text-text-primary-light dark:text-text-primary-dark">Estoque</span>
+                </button>
+            </div>
+        </section>
+        <section class="px-6 mt-10">
+            <div class="flex justify-between items-end mb-4">
+                <h2 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">Pedidos Recentes</h2>
+                <a class="text-primary text-sm font-medium hover:underline mb-1" href="orders.html">Ver todos</a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="col-span-full py-10 text-center">
+                    <p class="text-text-secondary-light dark:text-text-secondary-dark font-medium">Carregando pedidos
+                        recentes...</p>
+                </div>
+            </div>
+        </section>
+        <section class="px-6 mt-12 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-text-primary-light dark:text-text-primary-dark">Destaque</h2>
+            <div
+                class="w-full rounded-2xl overflow-hidden bg-white dark:bg-card-dark shadow-soft group cursor-pointer relative">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all z-10"></div>
+                <img alt="Pizza Promo"
+                    class="w-full h-64 md:h-80 object-cover transform group-hover:scale-105 transition-transform duration-700"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCizWgmSl7zhMVTuB-BLxdP3Ywgj98iwfPO0chg770gz5jF7DlTgaDgElaWoFyKNi0YwPZ4gjuBNTb8N7_gCE2eSq2PLA1i4FKY8JMYXQlOvhqEyTO2kedKu_5L9rtVYE4PAizUiVGX4JvKuqFhOK9EyTdSRXxW3B9_VFJk0zTO4tSQP9g74YNybxP_KFKllziTfn9hl1oejr4Qa-JIVPo6_FaREC-StJzXashAtMnTcj5wg_6-pOY25vRhXgc-X50nvy7YQ7a46Bo" />
+                <div class="absolute bottom-0 left-0 p-6 z-20 w-full">
+                    <span class="text-xs font-bold text-white uppercase tracking-wider mb-2 block">Promoção do
+                        Dia</span>
+                    <h4 class="text-3xl font-bold text-white mb-2 leading-tight">Combo da Felicidade.</h4>
+                    <p class="text-gray-200 text-sm mb-4 line-clamp-2">Aproveite para vender mais hoje com o desconto no
+                        combo familiar.</p>
+                    <button
+                        class="bg-white text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-100 transition">Ativar
+                        Promoção</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <nav
+        class="fixed bottom-0 w-full bg-white/90 dark:bg-[#1d1d1f]/90 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 pb-safe pt-2 px-6 z-50">
+        <!-- Injected by components.js -->
+    </nav>
+
+</body>
+
+</html>

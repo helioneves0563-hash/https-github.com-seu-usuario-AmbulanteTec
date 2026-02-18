@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AmbulanteTec - Clientes</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <link href="assets/css/style.css" rel="stylesheet" />
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabaseConfig.js"></script>
+    <script src="assets/js/services/customerService.js"></script>
+    <script src="assets/js/services/authService.js"></script>
+    <script src="assets/js/app.js" defer></script>
+    <script src="assets/js/components.js" defer></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0071e3",
+                        "primary-dark": "#2997ff",
+                        "background-light": "#f5f5f7",
+                        "background-dark": "#000000",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1d1d1f",
+                        "text-light": "#1d1d1f",
+                        "text-dark": "#f5f5f7",
+                        "secondary-text-light": "#86868b",
+                        "secondary-text-dark": "#86868b",
+                    }
+                },
+            },
+        };
+    </script>
+</head>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark antialiased min-h-screen pb-24 transition-colors duration-300">
+    <nav
+        class="fixed top-0 w-full z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+        <div class="container-responsive px-4 h-14 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+                    <span class="material-icons-round text-gray-500">menu</span>
+                </button>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+                    <span class="material-icons-round text-gray-500">shopping_bag</span>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 overflow-hidden">
+                    <img alt="Profile" class="w-full h-full object-cover opacity-90"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDb1VOmo6t0i07MwPXMVriVELwH2yP-uRDo3HLX86iRw4L3AjhkksAr6O8RjoANPjH7mRuckNE1tbW28BVHuiLrhguCAQSJRQXOgyZQn02N6SkVuWLXi25cL7bNy4H5IPMNtT0eRpvKbFkT5013SD3W3PAloE2T84nayN0NRvzCmGQUWffZozzLfT4cD9C1v3VFoQ9vIGqvH9b7iMYfWIE_LZJ4eWJfTzsxJkq4EeVz_EeIuI3QcOJsrLfF2V0cj9I677-doNHerk" />
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="pt-20 px-4 sm:px-6 container-responsive">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+            <div>
+                <h1 class="text-4xl font-bold tracking-tight text-text-light dark:text-white">Clientes</h1>
+                <p class="mt-1 text-secondary-text-light dark:text-secondary-text-dark text-sm">Gerencie seus contatos e
+                    pedidos.</p>
+            </div>
+            <button id="add-customer-btn" onclick="window.location.href='add-edit-customer.html'"
+                class="flex items-center justify-center space-x-2 bg-primary hover:bg-blue-600 dark:bg-primary-dark dark:hover:bg-blue-500 text-white px-5 py-2.5 rounded-full font-medium transition-all shadow-md active:scale-95">
+                <span class="material-icons-round text-lg">add</span>
+                <span>Novo Cliente</span>
+            </button>
+        </div>
+        <div class="relative mb-8 group">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span
+                    class="material-icons-round text-gray-400 group-focus-within:text-primary transition-colors">search</span>
+            </div>
+            <input id="customer-search"
+                class="block w-full pl-10 pr-4 py-3 bg-surface-light dark:bg-surface-dark border-none rounded-xl text-text-light dark:white placeholder-gray-400 focus:ring-2 focus:ring-primary/50 shadow-sm transition-all text-base"
+                placeholder="Buscar por nome ou telefone..." type="text" />
+        </div>
+        <div class="flex space-x-3 mb-6 overflow-x-auto no-scrollbar pb-2">
+            <button data-status="all"
+                class="customer-filter whitespace-nowrap px-4 py-1.5 bg-text-light dark:bg-white text-white dark:text-black rounded-full text-sm font-medium shadow-sm">Todos</button>
+            <button data-status="Active"
+                class="customer-filter whitespace-nowrap px-4 py-1.5 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-secondary-text-light dark:text-gray-300 rounded-full text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Com
+                pedidos</button>
+            <button data-status="New"
+                class="customer-filter whitespace-nowrap px-4 py-1.5 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-secondary-text-light dark:text-gray-300 rounded-full text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Novos</button>
+            <button data-status="Inactive"
+                class="customer-filter whitespace-nowrap px-4 py-1.5 bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-secondary-text-light dark:text-gray-300 rounded-full text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Inativos</button>
+        </div>
+        <div id="customers-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="py-10 text-center col-span-full">
+                <p class="text-secondary-text-light dark:text-secondary-text-dark">Carregando clientes...</p>
+            </div>
+        </div>
+    </main>
+    <div
+        class="fixed bottom-0 w-full bg-surface-light/80 dark:bg-surface-dark/90 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 pb-safe">
+        <nav>
+            <!-- Injected by components.js -->
+        </nav>
+    </div>
+    <div class="h-20"></div>
+
+</body>
+
+</html>

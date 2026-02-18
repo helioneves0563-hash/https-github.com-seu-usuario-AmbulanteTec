@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const path = window.location.pathname;
     const page = path.split('/').pop() || 'index.html';
 
-    /* 
     // Proteção de Rotas: Se não estiver em login.html, verificar Auth
     if (page !== 'login.html' && window.supabaseClient) {
         const { data: { session } } = await window.supabaseClient.auth.getSession();
@@ -18,7 +17,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
     }
-    */
 
     // Inicializar Dark Mode
     if (localStorage.getItem('apple-theme') === 'dark' ||

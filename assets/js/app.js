@@ -128,6 +128,24 @@ async function initDashboard() {
         // Carregar pedidos reais do Supabase
         const orders = await window.orderService.getOrders();
 
+        // Carregar Destaque do Dia
+        if (window.highlightService) {
+            const highlight = await window.highlightService.getHighlight();
+            if (highlight) {
+                const badgeEl = document.getElementById('highlight-badge');
+                const titleEl = document.getElementById('highlight-title');
+                const descEl = document.getElementById('highlight-desc');
+                const btnEl = document.getElementById('highlight-btn');
+                const imgEl = document.getElementById('highlight-img');
+
+                if (badgeEl) badgeEl.textContent = highlight.badge_text;
+                if (titleEl) titleEl.textContent = highlight.title;
+                if (descEl) descEl.textContent = highlight.description;
+                if (btnEl) btnEl.textContent = highlight.button_text;
+                if (imgEl && highlight.image_url) imgEl.src = highlight.image_url;
+            }
+        }
+
         // 1. Total de Vendas hoje
         const totalSales = orders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0);
         if (salesTodayEl) salesTodayEl.textContent = `R$ ${totalSales.toFixed(2)}`;
@@ -1156,3 +1174,58 @@ async function initCheckoutPage() {
 
     renderCart();
 }
+
+/**
+ * Funções Globais para o Destaque
+ */
+window.app_openHighlightModal = async () => {
+    const modal = document.getElementById('highlight-modal');
+    if (!modal) return;
+
+    // Preencher campos com os valores atuais
+    if (window.highlightService) {
+        const highlight = await window.highlightService.getHighlight();
+        if (highlight) {
+            document.getElementById('edit-highlight-badge').value = highlight.badge_text || 'Promoção do Dia';
+            document.getElementById('edit-highlight-title').value = highlight.title || '';
+            document.getElementById('edit-highlight-desc').value = highlight.description || '';
+            document.getElementById('edit-highlight-btn').value = highlight.button_text || 'Ativar Promoção';
+            document.getElementById('edit-highlight-img').value = highlight.image_url || '';
+        }
+    }
+
+    modal.classList.remove('hidden');
+};
+
+window.app_closeHighlightModal = () => {
+    const modal = document.getElementById('highlight-modal');
+    if (modal) modal.classList.add('hidden');
+};
+
+// Listener para salvar destaque
+document.addEventListener('submit', async (e) => {
+    if (e.target.id === 'highlight-form') {
+        e.preventDefault();
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+
+        const highlightData = {
+            badge_text: document.getElementById('edit-highlight-badge').value,
+            title: document.getElementById('edit-highlight-title').value,
+            description: document.getElementById('edit-highlight-desc').value,
+            button_text: document.getElementById('edit-highlight-btn').value,
+            image_url: document.getElementById('edit-highlight-img').value,
+        };
+
+        try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Salvando...';
+            await window.highlightService.upsertHighlight(highlightData);
+            window.app_closeHighlightModal();
+            window.location.reload(); // Recarregar para atualizar o dashboard
+        } catch (error) {
+            alert('Erro ao salvar destaque: ' + error.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Salvar Destaque';
+        }
+    }
+});

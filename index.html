@@ -13,6 +13,7 @@
     <script src="assets/js/supabaseConfig.js"></script>
     <script src="assets/js/services/orderService.js"></script>
     <script src="assets/js/services/authService.js"></script>
+    <script src="assets/js/services/highlightService.js"></script>
     <script src="assets/js/app.js" defer></script>
     <script src="assets/js/components.js" defer></script>
     <script>
@@ -159,20 +160,29 @@
             </div>
         </section>
         <section class="px-6 mt-12 mb-8">
-            <h2 class="text-xl font-semibold mb-4 text-text-primary-light dark:text-text-primary-dark">Destaque</h2>
-            <div
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-text-primary-light dark:text-text-primary-dark">Destaque</h2>
+                <button onclick="window.app_openHighlightModal()"
+                    class="text-primary text-sm font-medium hover:underline flex items-center">
+                    <span class="material-icons-round text-sm mr-1">edit</span> Editar
+                </button>
+            </div>
+            <div id="highlight-banner"
                 class="w-full rounded-2xl overflow-hidden bg-white dark:bg-card-dark shadow-soft group cursor-pointer relative">
                 <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all z-10"></div>
-                <img alt="Pizza Promo"
+                <img id="highlight-img" alt="Pizza Promo"
                     class="w-full h-64 md:h-80 object-cover transform group-hover:scale-105 transition-transform duration-700"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCizWgmSl7zhMVTuB-BLxdP3Ywgj98iwfPO0chg770gz5jF7DlTgaDgElaWoFyKNi0YwPZ4gjuBNTb8N7_gCE2eSq2PLA1i4FKY8JMYXQlOvhqEyTO2kedKu_5L9rtVYE4PAizUiVGX4JvKuqFhOK9EyTdSRXxW3B9_VFJk0zTO4tSQP9g74YNybxP_KFKllziTfn9hl1oejr4Qa-JIVPo6_FaREC-StJzXashAtMnTcj5wg_6-pOY25vRhXgc-X50nvy7YQ7a46Bo" />
-                <div class="absolute bottom-0 left-0 p-6 z-20 w-full">
-                    <span class="text-xs font-bold text-white uppercase tracking-wider mb-2 block">Promoção do
+                    src="https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=2070&auto=format&fit=crop" />
+                <div class="absolute bottom-0 left-0 p-6 z-20 w-full text-left">
+                    <span id="highlight-badge"
+                        class="text-xs font-bold text-white uppercase tracking-wider mb-2 block">Promoção do
                         Dia</span>
-                    <h4 class="text-3xl font-bold text-white mb-2 leading-tight">Combo da Felicidade.</h4>
-                    <p class="text-gray-200 text-sm mb-4 line-clamp-2">Aproveite para vender mais hoje com o desconto no
+                    <h4 id="highlight-title" class="text-3xl font-bold text-white mb-2 leading-tight">Combo da
+                        Felicidade.</h4>
+                    <p id="highlight-desc" class="text-gray-200 text-sm mb-4 line-clamp-2">Aproveite para vender mais
+                        hoje com o desconto no
                         combo familiar.</p>
-                    <button
+                    <button id="highlight-btn"
                         class="bg-white text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-100 transition">Ativar
                         Promoção</button>
                 </div>
@@ -184,6 +194,52 @@
         <!-- Injected by components.js -->
     </nav>
 
+    <!-- Modal Editar Destaque -->
+    <div id="highlight-modal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="window.app_closeHighlightModal()"></div>
+        <div
+            class="absolute bottom-0 left-0 right-0 max-w-lg mx-auto bg-surface-light dark:bg-surface-dark rounded-t-[2.5rem] p-8 shadow-2xl animate-slide-up border-t border-gray-100 dark:border-gray-800">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Configurar Destaque</h3>
+                <button onclick="window.app_closeHighlightModal()" class="text-gray-400 hover:text-gray-600">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <form id="highlight-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary-light mb-1">Badge (ex: Promoção)</label>
+                    <input type="text" id="edit-highlight-badge"
+                        class="block w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-primary"
+                        value="Promoção do Dia">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary-light mb-1">Título</label>
+                    <input type="text" id="edit-highlight-title" required
+                        class="block w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary-light mb-1">Descrição</label>
+                    <textarea id="edit-highlight-desc" rows="3"
+                        class="block w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-primary"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary-light mb-1">Texto do Botão</label>
+                    <input type="text" id="edit-highlight-btn"
+                        class="block w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-primary"
+                        value="Ativar Promoção">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary-light mb-1">Link da Imagem (URL)</label>
+                    <input type="url" id="edit-highlight-img"
+                        class="block w-full px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-2 focus:ring-primary"
+                        placeholder="https://exemplo.com/foto.jpg">
+                </div>
+                <button type="submit"
+                    class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-all">Salvar
+                    Destaque</button>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>

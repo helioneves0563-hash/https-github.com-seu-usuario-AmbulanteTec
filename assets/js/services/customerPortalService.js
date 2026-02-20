@@ -58,22 +58,49 @@ const customerPortalService = {
             customerId = newCustomer.id;
         }
 
-        // 2. Calcular total
-        const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        // 2. Calcular total dos novos itens
+        const newTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-        // 3. Criar pedido
-        const { data: order, error: orderError } = await window.supabaseClient
+        // 3. Verificar se já existe um pedido em aberto para acumular
+        let order;
+        const { data: openOrders } = await window.supabaseClient
             .from('orders')
-            .insert({
-                customer_id: customerId,
-                establishment_id: establishmentId,
-                total,
-                status: 'Aberto'
-            })
-            .select()
-            .single();
+            .select('*')
+            .eq('customer_id', customerId)
+            .eq('status', 'Aberto')
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-        if (orderError) throw new Error('Erro ao criar pedido: ' + orderError.message);
+        if (openOrders && openOrders.length > 0) {
+            // Reutiliza e atualiza o pedido aberto existente
+            order = openOrders[0];
+            const updatedTotal = parseFloat(order.total || 0) + newTotal;
+
+            const { data: updatedOrder, error: updateError } = await window.supabaseClient
+                .from('orders')
+                .update({ total: updatedTotal })
+                .eq('id', order.id)
+                .select()
+                .single();
+
+            if (updateError) throw new Error('Erro ao atualizar pedido existente: ' + updateError.message);
+            order = updatedOrder;
+        } else {
+            // Criar um novo pedido
+            const { data: newOrder, error: orderError } = await window.supabaseClient
+                .from('orders')
+                .insert({
+                    customer_id: customerId,
+                    establishment_id: establishmentId,
+                    total: newTotal,
+                    status: 'Aberto'
+                })
+                .select()
+                .single();
+
+            if (orderError) throw new Error('Erro ao criar pedido: ' + orderError.message);
+            order = newOrder;
+        }
 
         // 4. Criar itens do pedido (se a tabela order_items existir)
         if (order && items.length > 0) {

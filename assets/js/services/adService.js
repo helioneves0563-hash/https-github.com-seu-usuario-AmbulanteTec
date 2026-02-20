@@ -70,8 +70,10 @@ const adService = {
             </style>
             <div style="background:#1c1c1e; border-radius:24px; overflow:hidden; width:100%; max-width:400px; color:white; box-shadow:0 25px 60px rgba(0,0,0,0.5);">
                 ${imageUrl
-                ? `<img src="${imageUrl}" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.style.display='none'" />`
-                : `<div style="width:100%;height:100px;background:linear-gradient(135deg,#6C63FF,#9d5cff);display:flex;align-items:center;justify-content:center;font-size:48px;">📢</div>`
+                ? (/\.(mp4|webm|ogg|mov)(\?|$)/i.test(imageUrl)
+                    ? `<video src="${imageUrl}" style="width:100%;height:220px;object-fit:cover;display:block;" autoplay muted loop playsinline></video>`
+                    : `<img src="${imageUrl}" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.style.display='none'" />`)
+                : `<div style="width:100%;height:80px;background:linear-gradient(135deg,#6C63FF,#9d5cff);display:flex;align-items:center;justify-content:center;font-size:40px;">📢</div>`
             }
                 <div style="padding:20px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">

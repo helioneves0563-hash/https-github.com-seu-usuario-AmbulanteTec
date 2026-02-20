@@ -1119,15 +1119,17 @@ async function initCheckoutPage() {
             confirmBtn.textContent = 'Verificando estoque...';
 
             try {
-                // --- VALIDAÇÃO FINAL DE ESTOQUE ---
-                for (const item of cart) {
-                    const product = await window.productService.getProductById(item.id);
-                    const available = product ? (product.stock || 0) : 0;
-                    if (available < item.quantity) {
-                        alert(`Estoque insuficiente para "${item.name}". Disponível: ${available}. Por favor, ajuste seu pedido.`);
-                        confirmBtn.disabled = false;
-                        confirmBtn.textContent = 'Confirmar Fechamento';
-                        return;
+                // --- VALIDAÇÃO FINAL DE ESTOQUE (Apenas para novos pedidos via PDV/Caixa) ---
+                if (!isClosingOrder) {
+                    for (const item of cart) {
+                        const product = await window.productService.getProductById(item.id);
+                        const available = product ? (product.stock || 0) : 0;
+                        if (available < item.quantity) {
+                            alert(`Estoque insuficiente para "${item.name}". Disponível: ${available}. Por favor, ajuste seu pedido.`);
+                            confirmBtn.disabled = false;
+                            confirmBtn.textContent = 'Confirmar Fechamento';
+                            return;
+                        }
                     }
                 }
 
@@ -1158,12 +1160,16 @@ async function initCheckoutPage() {
                     await window.orderService.createOrderWithItems(orderData, cart);
                 }
 
-                // --- BAIXA DE ESTOQUE ---
-                for (const item of cart) {
-                    try {
-                        await window.productService.decrementStock(item.id, item.quantity);
-                    } catch (e) {
-                        console.error(`Erro ao baixar estoque do produto ${item.id}:`, e);
+                // --- BAIXA DE ESTOQUE (Apenas para novos pedidos via PDV/Caixa) ---
+                // Para itens já em pedidos em andamento, a baixa é feita silenciosamente
+                // na adição do item (ver orderService ou customerPortalService)
+                if (!isClosingOrder) {
+                    for (const item of cart) {
+                        try {
+                            await window.productService.decrementStock(item.id, item.quantity);
+                        } catch (e) {
+                            console.error(`Erro ao baixar estoque do produto ${item.id}:`, e);
+                        }
                     }
                 }
 

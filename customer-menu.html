@@ -479,6 +479,9 @@
                 localStorage.setItem('portal_cart', JSON.stringify(cart));
                 hideCart();
                 updateCartUI();
+                
+                // Recarrega os produtos do banco de dados para pegar as quantidades de estoque atualizadas
+                allProducts = await window.customerPortalService.getPublicProducts(establishmentId);
                 renderProducts(allProducts);
 
                 // Exibir propaganda (se houver adService disponível)

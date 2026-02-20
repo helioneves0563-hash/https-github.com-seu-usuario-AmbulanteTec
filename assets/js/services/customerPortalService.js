@@ -121,15 +121,24 @@ const customerPortalService = {
             }
         }
 
-        // 5. Decrementar estoque (silencioso — não bloqueia o pedido se falhar)
+        // 5. Decrementar estoque 
         for (const item of items) {
             try {
-                await window.supabaseClient
+                // Busca o estoque atual em tempo real para evitar sobrescrever com dado velho do carrinho
+                const { data: p } = await window.supabaseClient
                     .from('products')
-                    .update({ stock: item.stock - item.quantity })
-                    .eq('id', item.id);
+                    .select('stock')
+                    .eq('id', item.id)
+                    .single();
+
+                if (p && typeof p.stock === 'number') {
+                    await window.supabaseClient
+                        .from('products')
+                        .update({ stock: p.stock - item.quantity })
+                        .eq('id', item.id);
+                }
             } catch (e) {
-                console.warn('Aviso: estoque não decrementado para', item.id);
+                console.warn('Aviso: estoque não decrementado para', item.id, e);
             }
         }
 

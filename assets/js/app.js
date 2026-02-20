@@ -848,6 +848,17 @@ async function initAddEditProductPage() {
         if (productId) productData.id = productId;
 
         try {
+            if (!productId) {
+                // Verificar produto com mesmo nome se estiver criando novo
+                const existingProducts = await window.productService.getProducts();
+                const duplicate = existingProducts.find(p => p.name.trim().toLowerCase() === name.trim().toLowerCase());
+
+                if (duplicate) {
+                    productData.id = duplicate.id;
+                    productData.stock = (parseInt(duplicate.stock) || 0) + totalStock;
+                }
+            }
+
             await window.productService.upsertProduct(productData);
             window.location.href = 'products.html';
         } catch (error) {

@@ -1105,7 +1105,7 @@ async function initCheckoutPage() {
 
                 if (isClosingOrder) {
                     // Atualizar pedido existente para Fechado
-                    await window.supabaseClient
+                    const { error: updateError } = await window.supabaseClient
                         .from('orders')
                         .update({
                             status: 'Fechado',
@@ -1113,6 +1113,8 @@ async function initCheckoutPage() {
                             payment_method: paymentMethod
                         })
                         .eq('id', existingOrderId);
+
+                    if (updateError) throw new Error('Falha ao atualizar pedido: ' + updateError.message);
                 } else {
                     // Criar novo pedido
                     const orderData = {

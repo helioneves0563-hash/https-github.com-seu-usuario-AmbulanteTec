@@ -471,7 +471,7 @@
                 // Exibir propaganda (se houver adService disponível)
                 if (window.adService && typeof window.adService.showPostOrderAd === 'function') {
                     window.adService.showPostOrderAd(() => {
-                        // Nada extra no momento, permanece na mesma tela zero bala
+                        // Reseta a UI do modal no callback do ad
                     });
                 } else {
                     alert('✅ Pedido confirmado! Obrigado!');
@@ -480,6 +480,7 @@
             } catch (e) {
                 console.error(e);
                 alert('Erro ao enviar pedido: ' + e.message);
+            } finally {
                 btn.disabled = false;
                 btn.textContent = '✅ Confirmar Pedido';
             }

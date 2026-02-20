@@ -1,16 +1,19 @@
 /**
- * Serviço de Clientes - Integração Supabase
+ * Serviço de Clientes — Integração Supabase
+ * Filtrado por estabelecimento (todos os vendedores veem os mesmos clientes)
  */
 const customerService = {
     /**
-     * Busca todos os clientes
+     * Busca todos os clientes do estabelecimento
      */
     async getCustomers() {
-        const user = await window.authService.getCurrentUser();
+        const estab = await window.establishmentService.getMyEstablishment();
+        if (!estab) return [];
+
         const { data, error } = await window.supabaseClient
             .from('customers')
             .select('*')
-            .eq('seller_id', user?.id)
+            .eq('establishment_id', estab.id)
             .order('name', { ascending: true });
 
         if (error) {
@@ -38,13 +41,16 @@ const customerService = {
     },
 
     /**
-     * Cria ou atualiza um cliente
+     * Cria ou atualiza um cliente (vinculando ao estabelecimento)
      */
     async upsertCustomer(customer) {
         const user = await window.authService.getCurrentUser();
+        const estab = await window.establishmentService.getMyEstablishment();
+        if (!estab) throw new Error('Estabelecimento não encontrado.');
+
         const { data, error } = await window.supabaseClient
             .from('customers')
-            .upsert({ ...customer, seller_id: user?.id })
+            .upsert({ ...customer, seller_id: user?.id, establishment_id: estab.id })
             .select();
 
         if (error) {

@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/js/supabaseConfig.js"></script>
     <script src="assets/js/services/authService.js" defer></script>
+    <script src="assets/js/services/establishmentService.js" defer></script>
     <script src="assets/js/app.js" defer></script>
     <script>
         tailwind.config = {
@@ -81,10 +82,11 @@
             </p>
         </div>
 
-        <!-- Register Card -->
         <div id="register-container"
             class="hidden bg-surface-light dark:bg-surface-dark p-8 rounded-[2.5rem] shadow-apple border border-gray-100 dark:border-gray-800 w-full animate-fade-in">
-            <h2 class="text-xl font-bold mb-6 text-center">Cadastro de Vendedor</h2>
+            <h2 class="text-xl font-bold mb-2 text-center">Cadastro de Vendedor</h2>
+            <p class="text-center text-xs text-text-secondary-light dark:text-text-secondary-dark mb-5">Crie um novo
+                estabelecimento ou entre em um existente</p>
             <form id="register-form" class="space-y-4">
                 <div class="space-y-2">
                     <label class="text-sm font-medium ml-1 opacity-70" for="reg-email">E-mail</label>
@@ -95,6 +97,34 @@
                     <label class="text-sm font-medium ml-1 opacity-70" for="reg-password">Senha</label>
                     <input id="reg-password" type="password" placeholder="Mínimo 6 caracteres" required minlength="6"
                         class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl px-4 py-3.5 transition-all text-base">
+                </div>
+
+                <!-- Separador Estabelecimento -->
+                <div class="relative py-1">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                    </div>
+                    <div class="relative flex justify-center"><span
+                            class="bg-surface-light dark:bg-surface-dark px-3 text-xs text-gray-500">Estabelecimento</span>
+                    </div>
+                </div>
+
+                <!-- Opção 1: Criar novo -->
+                <div id="reg-new-establishment" class="space-y-2">
+                    <label class="text-sm font-medium ml-1 opacity-70" for="reg-establishment-name">Nome do
+                        Estabelecimento (novo)</label>
+                    <input id="reg-establishment-name" type="text" placeholder="Ex: Lanchonete da Maria"
+                        class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl px-4 py-3.5 transition-all text-base">
+                </div>
+
+                <!-- Opção 2: Entrar com código -->
+                <div class="space-y-2">
+                    <label class="text-sm font-medium ml-1 opacity-70" for="reg-establishment-code">Ou use o código do
+                        estabelecimento</label>
+                    <input id="reg-establishment-code" type="text" placeholder="Ex: LANCH-A3K9" maxlength="12"
+                        class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-800 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl px-4 py-3.5 transition-all text-base uppercase tracking-widest">
+                    <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark ml-1">Se preenchido, o
+                        nome acima é ignorado.</p>
                 </div>
 
                 <button type="submit"

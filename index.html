@@ -11,8 +11,9 @@
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/js/supabaseConfig.js"></script>
-    <script src="assets/js/services/orderService.js"></script>
     <script src="assets/js/services/authService.js"></script>
+    <script src="assets/js/services/establishmentService.js"></script>
+    <script src="assets/js/services/orderService.js"></script>
     <script src="assets/js/services/highlightService.js"></script>
     <script src="assets/js/app.js" defer></script>
     <script src="assets/js/components.js" defer></script>
@@ -144,6 +145,15 @@
                         <span class="material-icons-round text-primary text-2xl">inventory_2</span>
                     </div>
                     <span class="font-semibold text-text-primary-light dark:text-text-primary-dark">Estoque</span>
+                </button>
+                <button onclick="window.location.href='establishment.html'"
+                    class="flex flex-col items-start p-5 rounded-2xl bg-card-light dark:bg-card-dark shadow-soft hover:shadow-lg transition-shadow duration-300">
+                    <div class="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-lg mb-3">
+                        <span
+                            class="material-icons-round text-purple-600 dark:text-purple-400 text-2xl">storefront</span>
+                    </div>
+                    <span
+                        class="font-semibold text-text-primary-light dark:text-text-primary-dark">Estabelecimento</span>
                 </button>
             </div>
         </section>

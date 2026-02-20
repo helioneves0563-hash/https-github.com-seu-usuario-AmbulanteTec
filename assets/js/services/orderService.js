@@ -1,16 +1,19 @@
 /**
- * Serviço de Pedidos - Integração Supabase
+ * Serviço de Pedidos — Integração Supabase
+ * Filtrado por estabelecimento (todos os vendedores veem os mesmos pedidos)
  */
 const orderService = {
     /**
-     * Busca todos os pedidos com os nomes dos clientes
+     * Busca todos os pedidos do estabelecimento com nome dos clientes
      */
     async getOrders() {
-        const user = await window.authService.getCurrentUser();
+        const estab = await window.establishmentService.getMyEstablishment();
+        if (!estab) return [];
+
         const { data, error } = await window.supabaseClient
             .from('orders')
             .select('*, customers(name)')
-            .eq('seller_id', user?.id)
+            .eq('establishment_id', estab.id)
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -54,19 +57,27 @@ const orderService = {
     },
 
     /**
-     * Cria um novo pedido e seus itens vinculados
+     * Cria um novo pedido com seus itens, vinculado ao estabelecimento
      */
     async createOrderWithItems(orderData, items) {
-        // 1. Criar o pedido
+        const user = await window.authService.getCurrentUser();
+        const estab = await window.establishmentService.getMyEstablishment();
+        if (!estab) throw new Error('Estabelecimento não encontrado.');
+
+        // 1. Criar pedido
         const { data: order, error: orderError } = await window.supabaseClient
             .from('orders')
-            .insert({ ...orderData, seller_id: (await window.authService.getCurrentUser())?.id })
+            .insert({
+                ...orderData,
+                seller_id: user?.id,
+                establishment_id: estab.id
+            })
             .select()
             .single();
 
         if (orderError) throw orderError;
 
-        // 2. Criar os itens vinculados
+        // 2. Criar itens vinculados
         const itemsToInsert = items.map(item => ({
             order_id: order.id,
             product_id: item.id,
@@ -84,7 +95,7 @@ const orderService = {
     },
 
     /**
-     * Busca os itens de um pedido com detalhes básicos do produto
+     * Busca os itens de um pedido com detalhes do produto
      */
     async getOrderItems(orderId) {
         const { data, error } = await window.supabaseClient
@@ -105,7 +116,7 @@ const orderService = {
     },
 
     /**
-     * Remove um pedido e seus itens (Cascade Delete deve estar ativo no BD)
+     * Remove um pedido e seus itens (Cascade Delete deve estar ativado no BD)
      */
     async deleteOrder(id) {
         const { error } = await window.supabaseClient

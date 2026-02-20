@@ -1,16 +1,19 @@
 /**
- * Serviço de Produtos - Integração Supabase
+ * Serviço de Produtos — Integração Supabase
+ * Filtrado por estabelecimento (todos os vendedores do mesmo local veem os mesmos produtos)
  */
 const productService = {
     /**
-     * Busca todos os produtos ativos do banco de dados
+     * Busca todos os produtos do estabelecimento
      */
     async getProducts() {
-        const user = await window.authService.getCurrentUser();
+        const estab = await window.establishmentService.getMyEstablishment();
+        if (!estab) return [];
+
         const { data, error } = await window.supabaseClient
             .from('products')
             .select('*')
-            .eq('seller_id', user?.id)
+            .eq('establishment_id', estab.id)
             .order('name', { ascending: true });
 
         if (error) {
@@ -38,13 +41,16 @@ const productService = {
     },
 
     /**
-     * Cria ou atualiza um produto
+     * Cria ou atualiza um produto (vinculando ao estabelecimento)
      */
     async upsertProduct(product) {
         const user = await window.authService.getCurrentUser();
+        const estab = await window.establishmentService.getMyEstablishment();
+        if (!estab) throw new Error('Estabelecimento não encontrado.');
+
         const { data, error } = await window.supabaseClient
             .from('products')
-            .upsert({ ...product, seller_id: user?.id })
+            .upsert({ ...product, seller_id: user?.id, establishment_id: estab.id })
             .select();
 
         if (error) {
@@ -55,7 +61,7 @@ const productService = {
     },
 
     /**
-     * Remove um produto (soft delete ou hard delete conforme sua regra)
+     * Remove um produto
      */
     async deleteProduct(id) {
         const { error } = await window.supabaseClient
@@ -74,15 +80,11 @@ const productService = {
      * Decrementa o estoque de um produto com validação
      */
     async decrementStock(productId, quantity) {
-        // Primeiro busca o estoque atual para garantir que ainda há produto
         const product = await this.getProductById(productId);
 
-        if (!product) {
-            throw new Error('Produto não encontrado.');
-        }
+        if (!product) throw new Error('Produto não encontrado.');
 
         const currentStock = product.stock || 0;
-
         if (currentStock < quantity) {
             throw new Error(`Estoque insuficiente para "${product.name}". Disponível: ${currentStock}`);
         }

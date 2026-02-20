@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AmbulanteTec - Meu Estabelecimento</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <link href="assets/css/style.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabaseConfig.js"></script>
+    <script src="assets/js/services/authService.js" defer></script>
+    <script src="assets/js/services/establishmentService.js" defer></script>
+    <script src="assets/js/services/adService.js" defer></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#6C63FF",
+                        "background-light": "#f0f0f5",
+                        "background-dark": "#0d0d1a",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a1a2e",
+                        "text-primary-light": "#1d1d2e",
+                        "text-primary-dark": "#f0f0f5",
+                        "text-secondary-light": "#6b6b80",
+                        "text-secondary-dark": "#9090a8",
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark min-h-screen">
+
+    <!-- Header -->
+    <header
+        class="sticky top-0 z-40 bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 px-4 py-4">
+        <div class="max-w-2xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <button onclick="window.location.href='index.html'"
+                    class="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <span
+                        class="material-icons-round text-text-secondary-light dark:text-text-secondary-dark">arrow_back</span>
+                </button>
+                <h1 class="text-lg font-bold">Meu Estabelecimento</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto px-4 py-6 space-y-6">
+
+        <!-- Info do Estabelecimento -->
+        <div id="estab-card" class="bg-gradient-to-br from-primary to-purple-700 rounded-3xl p-6 text-white shadow-xl">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-white/70 text-xs font-semibold uppercase tracking-widest mb-1">Meu Estabelecimento
+                    </p>
+                    <h2 id="estab-name" class="text-2xl font-bold mb-1">Carregando...</h2>
+                    <p id="estab-role" class="text-white/70 text-sm"></p>
+                </div>
+                <div class="h-14 w-14 bg-white/20 rounded-2xl flex items-center justify-center">
+                    <span class="material-icons-round text-3xl">storefront</span>
+                </div>
+            </div>
+            <div class="mt-5 bg-white/10 rounded-2xl p-4">
+                <p class="text-white/70 text-xs mb-1 font-semibold uppercase tracking-widest">Código de Acesso</p>
+                <div class="flex items-center justify-between">
+                    <span id="estab-code" class="text-2xl font-black tracking-widest">---</span>
+                    <button id="copy-code-btn" onclick="copyCode()"
+                        class="bg-white/20 hover:bg-white/30 transition-colors px-3 py-1.5 rounded-xl text-sm font-semibold flex items-center space-x-1">
+                        <span class="material-icons-round text-sm">content_copy</span>
+                        <span>Copiar</span>
+                    </button>
+                </div>
+                <p class="text-white/60 text-xs mt-2">Compartilhe este código com seus vendedores</p>
+            </div>
+        </div>
+
+        <!-- Link do Cardápio do Cliente -->
+        <div
+            class="bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                    <span class="material-icons-round text-green-600 dark:text-green-400">qr_code</span>
+                </div>
+                <div>
+                    <h3 class="font-bold">Portal do Cliente</h3>
+                    <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Link para seus clientes
+                        fazerem pedidos</p>
+                </div>
+            </div>
+            <div id="customer-link-box"
+                class="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 flex items-center justify-between">
+                <span id="customer-link"
+                    class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate mr-2">Carregando...</span>
+                <button onclick="copyCustomerLink()"
+                    class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold flex-shrink-0 flex items-center space-x-1 hover:bg-purple-700 transition-colors">
+                    <span class="material-icons-round text-sm">share</span>
+                    <span>Copiar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Vendedores do Estabelecimento -->
+        <div
+            class="bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-base">Vendedores</h3>
+                <span id="members-count"
+                    class="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs font-bold">0</span>
+            </div>
+            <div id="members-list" class="space-y-3">
+                <p class="text-center py-4 opacity-50 text-sm">Carregando...</p>
+            </div>
+        </div>
+
+        <!-- Gestão de Anúncios -->
+        <div
+            class="bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div
+                        class="h-10 w-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center">
+                        <span class="material-icons-round text-yellow-600 dark:text-yellow-400">campaign</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Meus Anúncios</h3>
+                        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Exibidos para
+                            clientes após os pedidos</p>
+                    </div>
+                </div>
+                <button onclick="showAdForm()"
+                    class="bg-primary text-white p-2 rounded-xl hover:bg-purple-700 transition-colors">
+                    <span class="material-icons-round text-sm">add</span>
+                </button>
+            </div>
+
+            <!-- Formulário de novo anúncio (oculto por padrão) -->
+            <div id="ad-form-container" class="hidden mb-4 bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 space-y-3">
+                <h4 class="font-semibold text-sm">Novo Anúncio</h4>
+                <input id="ad-title" type="text" placeholder="Título do anúncio"
+                    class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm">
+                <textarea id="ad-description" placeholder="Descrição (opcional)" rows="2"
+                    class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm resize-none"></textarea>
+                <input id="ad-image" type="url" placeholder="URL da imagem (opcional)"
+                    class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm">
+                <div class="flex space-x-2">
+                    <input id="ad-cta-text" type="text" placeholder="Texto do botão" value="Saiba mais"
+                        class="flex-1 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm">
+                    <input id="ad-cta-url" type="url" placeholder="Link do botão"
+                        class="flex-1 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm">
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="saveAd()"
+                        class="flex-1 bg-primary text-white rounded-xl py-2.5 text-sm font-bold hover:bg-purple-700 transition-colors">Salvar</button>
+                    <button onclick="hideAdForm()"
+                        class="flex-1 bg-gray-200 dark:bg-gray-800 text-text-primary-light dark:text-text-primary-dark rounded-xl py-2.5 text-sm font-semibold">Cancelar</button>
+                </div>
+            </div>
+
+            <div id="ads-list" class="space-y-3">
+                <p class="text-center py-4 opacity-50 text-sm">Carregando anúncios...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let currentEstab = null;
+        let currentUserId = null;
+
+        async function init() {
+            // Verificar autenticação
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            if (!session) { window.location.href = 'login.html'; return; }
+
+            currentUserId = session.user.id;
+
+            // Carregar estabelecimento
+            currentEstab = await window.establishmentService.getMyEstablishment();
+
+            if (!currentEstab) {
+                document.getElementById('estab-name').textContent = 'Nenhum estabelecimento';
+                document.getElementById('estab-code').textContent = '---';
+                document.getElementById('members-list').innerHTML = '<p class="text-center py-4 opacity-50 text-sm">Sem estabelecimento vinculado.</p>';
+                return;
+            }
+
+            // Preencher info
+            document.getElementById('estab-name').textContent = currentEstab.name;
+            document.getElementById('estab-code').textContent = currentEstab.code;
+            document.getElementById('estab-role').textContent = currentEstab.role === 'owner' ? '👑 Proprietário' : '🛒 Vendedor';
+
+            // Link do cliente
+            const portalUrl = `${window.location.origin}/customer-portal.html?est=${currentEstab.code}`;
+            document.getElementById('customer-link').textContent = portalUrl;
+            document.getElementById('customer-link').setAttribute('data-url', portalUrl);
+
+            // Carregar membros e anúncios
+            await loadMembers();
+            await loadAds();
+        }
+
+        async function loadMembers() {
+            const list = document.getElementById('members-list');
+            const countEl = document.getElementById('members-count');
+            const members = await window.establishmentService.getMembers();
+            countEl.textContent = members.length;
+
+            if (members.length === 0) {
+                list.innerHTML = '<p class="text-center py-4 opacity-50 text-sm">Nenhum vendedor encontrado.</p>';
+                return;
+            }
+
+            list.innerHTML = members.map(m => `
+                <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-800 last:border-0">
+                    <div class="flex items-center space-x-3">
+                        <div class="h-10 w-10 bg-gradient-to-br from-blue-400 to-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            ${m.role === 'owner' ? '👑' : '🛒'}
+                        </div>
+                        <div>
+                            <p class="font-semibold text-sm">${m.user_id.substring(0, 8)}...</p>
+                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">${m.role === 'owner' ? 'Proprietário' : 'Vendedor'} · Desde ${new Date(m.created_at).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                    </div>
+                    ${(currentEstab.role === 'owner' && m.user_id !== currentUserId) ? `
+                    <button onclick="removeMember('${m.user_id}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
+                        <span class="material-icons-round text-sm">person_remove</span>
+                    </button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        async function loadAds() {
+            const list = document.getElementById('ads-list');
+            if (!currentEstab) return;
+            const ads = await window.adService.getActiveAds(currentEstab.id);
+
+            if (ads.length === 0) {
+                list.innerHTML = '<p class="text-center py-4 opacity-50 text-sm">Nenhum anúncio cadastrado.</p>';
+                return;
+            }
+
+            list.innerHTML = ads.map(ad => `
+                <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
+                    <div class="flex items-center space-x-3">
+                        ${ad.image_url ? `<img src="${ad.image_url}" class="h-12 w-12 rounded-xl object-cover" />` : '<div class="h-12 w-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center"><span class="material-icons-round text-yellow-600">campaign</span></div>'}
+                        <div>
+                            <p class="font-semibold text-sm">${ad.title}</p>
+                            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">${ad.description || 'Sem descrição'}</p>
+                        </div>
+                    </div>
+                    <button onclick="deleteAd('${ad.id}')" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
+                        <span class="material-icons-round text-sm">delete_outline</span>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function removeMember(userId) {
+            if (!confirm('Remover este vendedor do estabelecimento?')) return;
+            try {
+                await window.establishmentService.removeMember(userId);
+                await loadMembers();
+            } catch (e) { alert('Erro: ' + e.message); }
+        }
+
+        function copyCode() {
+            const code = document.getElementById('estab-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.getElementById('copy-code-btn');
+                btn.innerHTML = '<span class="material-icons-round text-sm">check</span><span>Copiado!</span>';
+                setTimeout(() => { btn.innerHTML = '<span class="material-icons-round text-sm">content_copy</span><span>Copiar</span>'; }, 2000);
+            });
+        }
+
+        function copyCustomerLink() {
+            const url = document.getElementById('customer-link').getAttribute('data-url') || document.getElementById('customer-link').textContent;
+            navigator.clipboard.writeText(url).then(() => { alert('Link copiado! Compartilhe com seus clientes.'); });
+        }
+
+        function showAdForm() { document.getElementById('ad-form-container').classList.remove('hidden'); }
+        function hideAdForm() { document.getElementById('ad-form-container').classList.add('hidden'); }
+
+        async function saveAd() {
+            const title = document.getElementById('ad-title').value.trim();
+            if (!title) { alert('Informe o título do anúncio.'); return; }
+
+            try {
+                await window.adService.upsertAd({
+                    title,
+                    description: document.getElementById('ad-description').value.trim(),
+                    image_url: document.getElementById('ad-image').value.trim() || null,
+                    cta_text: document.getElementById('ad-cta-text').value.trim() || 'Saiba mais',
+                    cta_url: document.getElementById('ad-cta-url').value.trim() || null,
+                    active: true
+                });
+                hideAdForm();
+                document.getElementById('ad-title').value = '';
+                document.getElementById('ad-description').value = '';
+                document.getElementById('ad-image').value = '';
+                document.getElementById('ad-cta-url').value = '';
+                await loadAds();
+            } catch (e) { alert('Erro ao salvar anúncio: ' + e.message); }
+        }
+
+        async function deleteAd(id) {
+            if (!confirm('Excluir este anúncio?')) return;
+            try {
+                await window.adService.deleteAd(id);
+                await loadAds();
+            } catch (e) { alert('Erro: ' + e.message); }
+        }
+
+        // Inicializar após scripts carregarem
+        window.addEventListener('load', init);
+    </script>
+</body>
+
+</html>

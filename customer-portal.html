@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Cardápio Online</title>
+    <meta name="description" content="Acesse o cardápio e faça seu pedido facilmente." />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabaseConfig.js"></script>
+    <script src="assets/js/services/customerPortalService.js" defer></script>
+    <style>
+        * {
+            font-family: 'Outfit', sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            color: white;
+            padding: 16px 20px;
+            font-size: 16px;
+            width: 100%;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .glass-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .glass-input:focus {
+            border-color: #6C63FF;
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6C63FF, #3ec6e0);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-weight: 800;
+            font-size: 16px;
+            padding: 18px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .phone-mask {
+            letter-spacing: 2px;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-up {
+            animation: fadeUp 0.5s ease forwards;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="min-h-screen flex flex-col items-center justify-center px-5 py-10">
+
+        <!-- Loading state -->
+        <div id="loading-state" class="text-center text-white">
+            <div class="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="opacity-70">Carregando...</p>
+        </div>
+
+        <!-- Erro: estabelecimento não encontrado -->
+        <div id="error-state" class="hidden text-center text-white fade-up">
+            <div class="text-7xl mb-4 float">😕</div>
+            <h1 class="text-2xl font-black mb-2">Oops!</h1>
+            <p class="opacity-70">Estabelecimento não encontrado.<br>Verifique o link e tente novamente.</p>
+        </div>
+
+        <!-- Tela principal de entrada do cliente -->
+        <div id="main-content" class="hidden w-full max-w-sm space-y-6 fade-up">
+            <!-- Header do Estabelecimento -->
+            <div class="text-center">
+                <div class="text-7xl mb-4 float">🏪</div>
+                <h1 id="estab-name" class="text-3xl font-black text-white mb-1">Carregando...</h1>
+                <p class="text-white/60 text-sm">Bem-vindo ao nosso cardápio!</p>
+            </div>
+
+            <!-- Card de Acesso -->
+            <div class="glass-card p-7 space-y-4">
+                <div class="text-center mb-2">
+                    <h2 class="text-white font-bold text-xl">Identifique-se</h2>
+                    <p class="text-white/60 text-sm">Para acessar o cardápio</p>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-white/80 text-xs font-semibold ml-1">SEU NOME</label>
+                    <input id="customer-name" type="text" placeholder="Como quer ser chamado?" class="glass-input"
+                        autocomplete="name" autocorrect="off" />
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-white/80 text-xs font-semibold ml-1">TELEFONE (WhatsApp)</label>
+                    <input id="customer-phone" type="tel" placeholder="(00) 00000-0000" class="glass-input phone-mask"
+                        inputmode="numeric" maxlength="15" />
+                </div>
+
+                <button class="btn-primary mt-2" onclick="enterPortal()">
+                    Ver Cardápio 🛍️
+                </button>
+            </div>
+
+            <p class="text-center text-white/40 text-xs">
+                Seus dados são usados apenas para identificar seu pedido
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let establishmentData = null;
+
+        // Máscara de telefone
+        document.addEventListener('DOMContentLoaded', () => {
+            const phoneInput = document.getElementById('customer-phone');
+            if (phoneInput) {
+                phoneInput.addEventListener('input', (e) => {
+                    let v = e.target.value.replace(/\D/g, '');
+                    if (v.length > 11) v = v.substring(0, 11);
+                    if (v.length > 6) v = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+                    else if (v.length > 2) v = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+                    else if (v.length > 0) v = `(${v}`;
+                    e.target.value = v;
+                });
+            }
+        });
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('est');
+
+            if (!code) {
+                showError();
+                return;
+            }
+
+            // Verificar sessão salva
+            const session = window.customerPortalService?.getSession();
+            if (session?.customer && session?.establishmentId) {
+                // Já tem sessão, redirecionar para o menu
+                window.location.href = `customer-menu.html?est=${code}`;
+                return;
+            }
+
+            // Buscar estabelecimento
+            const estab = await window.customerPortalService.getEstablishmentByCode(code);
+
+            if (!estab) { showError(); return; }
+
+            establishmentData = estab;
+            document.getElementById('estab-name').textContent = estab.name;
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+        }
+
+        function showError() {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-state').classList.remove('hidden');
+        }
+
+        function enterPortal() {
+            const name = document.getElementById('customer-name').value.trim();
+            const phone = document.getElementById('customer-phone').value.trim();
+
+            if (!name) {
+                document.getElementById('customer-name').focus();
+                document.getElementById('customer-name').style.borderColor = '#ef4444';
+                return;
+            }
+            if (phone.length < 10) {
+                document.getElementById('customer-phone').focus();
+                document.getElementById('customer-phone').style.borderColor = '#ef4444';
+                return;
+            }
+
+            // Salvar sessão
+            window.customerPortalService.saveSession({ name, phone }, establishmentData.id);
+
+            // Redirecionar para o cardápio
+            const code = new URLSearchParams(window.location.search).get('est');
+            window.location.href = `customer-menu.html?est=${code}`;
+        }
+
+        // Permitir Enter no campo de telefone
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') enterPortal();
+        });
+
+        window.addEventListener('load', () => {
+            if (window.customerPortalService) {
+                init();
+            } else {
+                // Aguardar script carregar
+                setTimeout(init, 500);
+            }
+        });
+    </script>
+</body>
+
+</html>

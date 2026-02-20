@@ -12,7 +12,7 @@ const customerService = {
 
         const { data, error } = await window.supabaseClient
             .from('customers')
-            .select('*')
+            .select('*, orders(id, status)')
             .eq('establishment_id', estab.id)
             .order('name', { ascending: true });
 

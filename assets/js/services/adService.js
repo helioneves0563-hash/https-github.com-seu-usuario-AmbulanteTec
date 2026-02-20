@@ -66,34 +66,47 @@ const adService = {
             <style>
                 @keyframes fadeIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
                 @keyframes shrink { from { width:100%; } to { width:0%; } }
+                @keyframes shine { 0% { left:-100%; } 20% { left:100%; } 100% { left:100%; } }
                 #${progressId} { animation: shrink ${adDuration}ms linear forwards; }
+                .ad-cta-btn { position: relative; overflow: hidden; }
+                .ad-cta-btn::after {
+                    content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+                    background: linear-gradient(to right, transparent, rgba(255,255,255,0.4), transparent);
+                    transform: skewX(-20deg); animation: shine 3s infinite;
+                }
             </style>
-            <div style="background:#1c1c1e; border-radius:24px; overflow:hidden; width:100%; max-width:400px; color:white; box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+            <div style="background:#1c1c1e; border-radius:28px; border: 1px solid rgba(255,255,255,0.1); overflow:hidden; width:90vw; max-width:500px; color:white; box-shadow:0 30px 60px rgba(0,0,0,0.6);">
                 ${imageUrl
                 ? (/\.(mp4|webm|ogg|mov)(\?|$)/i.test(imageUrl)
-                    ? `<video src="${imageUrl}" style="width:100%;height:220px;object-fit:cover;display:block;" autoplay muted loop playsinline></video>`
-                    : `<img src="${imageUrl}" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.style.display='none'" />`)
-                : `<div style="width:100%;height:80px;background:linear-gradient(135deg,#6C63FF,#9d5cff);display:flex;align-items:center;justify-content:center;font-size:40px;">📢</div>`
+                    ? `<video id="ad-video-element" src="${imageUrl}" style="width:100%;height:320px;object-fit:cover;display:block;" autoplay muted loop playsinline></video>`
+                    : `<img src="${imageUrl}" style="width:100%;height:320px;object-fit:cover;display:block;" onerror="this.style.display='none'" />`)
+                : `<div style="width:100%;height:140px;background:linear-gradient(135deg,#6C63FF,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:48px;">📢</div>`
             }
-                <div style="padding:20px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                        <span style="background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;">📢 PUBLICIDADE</span>
-                        <span id="ad-countdown" style="font-size:12px;opacity:0.6;">Fechando em 8s</span>
+                <div style="padding:28px 24px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <span style="background:rgba(255,255,255,0.15);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px;color:#fff;">📢 PUBLICIDADE</span>
+                        <span id="ad-countdown" style="font-size:13px;opacity:0.6;font-weight:500;">Fechando em ${adDuration / 1000}s</span>
                     </div>
-                    <h3 style="font-size:20px;font-weight:800;margin-bottom:8px;">${ad.title}</h3>
-                    ${ad.description ? `<p style="font-size:14px;opacity:0.75;margin-bottom:16px;line-height:1.5;">${ad.description}</p>` : ''}
-                    <div style="display:flex;gap:10px;">
-                        ${ctaUrl ? `<a href="${ctaUrl}" target="_blank" rel="noopener" style="flex:1;background:#6C63FF;color:white;border:none;padding:14px;border-radius:14px;font-weight:700;font-size:15px;text-align:center;text-decoration:none;">${ad.cta_text || 'Saiba mais'}</a>` : ''}
-                        <button id="ad-close-btn" style="background:rgba(255,255,255,0.1);color:white;border:none;padding:14px 18px;border-radius:14px;font-weight:600;cursor:pointer;font-size:15px;">✕</button>
+                    <h3 style="font-size:24px;font-weight:900;margin-bottom:12px;line-height:1.2;">${ad.title}</h3>
+                    ${ad.description ? `<p style="font-size:15px;opacity:0.8;margin-bottom:24px;line-height:1.6;">${ad.description}</p>` : ''}
+                    <div style="display:flex;gap:12px;">
+                        ${ctaUrl ? `<a href="${ctaUrl}" target="_blank" rel="noopener" class="ad-cta-btn" style="flex:1;background:linear-gradient(135deg,#6C63FF,#8b5cf6);color:white;border:none;padding:16px;border-radius:18px;font-weight:800;font-size:16px;text-align:center;text-decoration:none;display:flex;justify-content:center;align-items:center;gap:8px;">${ad.cta_text || 'Saiba mais'}</a>` : ''}
+                        <button id="ad-close-btn" style="background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(255,255,255,0.1);padding:16px 20px;border-radius:18px;font-weight:700;cursor:pointer;font-size:16px;">✕</button>
                     </div>
-                    <div style="margin-top:12px;height:3px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;">
-                        <div id="${progressId}" style="height:100%;background:#6C63FF;border-radius:10px;"></div>
-                    </div>
+                </div>
+                <div style="height:4px;background:rgba(255,255,255,0.05);width:100%;">
+                    <div id="${progressId}" style="height:100%;background:#6C63FF;box-shadow: 0 0 10px #6C63FF;"></div>
                 </div>
             </div>
         `;
 
         document.body.appendChild(overlay);
+
+        // Forçar play no vídeo caso o autoplay tenha falhado
+        const videoEl = document.getElementById('ad-video-element');
+        if (videoEl) {
+            videoEl.play().catch(e => console.warn('Ad video play blocked:', e));
+        }
 
         const dismiss = () => {
             overlay.remove();

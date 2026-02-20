@@ -34,7 +34,7 @@ const adService = {
         }
 
         const ad = ads[Math.floor(Math.random() * ads.length)];
-        const adDuration = 8000;
+        const adDuration = 30000; // 30 segundos
 
         const overlay = document.createElement('div');
         overlay.id = 'ad-modal-overlay';

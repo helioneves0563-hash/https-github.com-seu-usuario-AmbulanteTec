@@ -181,6 +181,27 @@
             currentEstab = await window.establishmentService.getMyEstablishment();
 
             if (!currentEstab) {
+                // Verificar se existe uma intenção pendente do cadastro
+                const pending = localStorage.getItem('pending_estab');
+                if (pending) {
+                    localStorage.removeItem('pending_estab');
+                    try {
+                        const intent = JSON.parse(pending);
+                        if (intent.type === 'join' && intent.code) {
+                            await window.establishmentService.joinEstablishment(intent.code);
+                        } else if (intent.type === 'create' && intent.name) {
+                            await window.establishmentService.createEstablishment(intent.name);
+                        }
+                        // Sucesso: recarregar para exibir o painel
+                        window.location.reload();
+                        return;
+                    } catch (e) {
+                        console.warn('Erro ao processar intenção pendente:', e.message);
+                        // Mostrar formulário com mensagem amigável
+                        showSetupForm(`Não foi possível ${pending.type === 'join' ? 'entrar no' : 'criar o'} estabelecimento automaticamente. Por favor, tente novamente.`);
+                        return;
+                    }
+                }
                 showSetupForm();
             } else {
                 showEstabPanel();

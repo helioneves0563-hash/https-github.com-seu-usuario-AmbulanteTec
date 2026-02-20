@@ -124,21 +124,18 @@ const customerPortalService = {
         // 5. Decrementar estoque 
         for (const item of items) {
             try {
-                // Busca o estoque atual em tempo real para evitar sobrescrever com dado velho do carrinho
-                const { data: p } = await window.supabaseClient
-                    .from('products')
-                    .select('stock')
-                    .eq('id', item.id)
-                    .single();
+                // Instrui o backend a usar uma função escalonada com Bypass de perfil (Security Definer)
+                const { error: rpcError } = await window.supabaseClient
+                    .rpc('decrement_product_stock', {
+                        p_product_id: item.id,
+                        p_quantity: item.quantity
+                    });
 
-                if (p && typeof p.stock === 'number') {
-                    await window.supabaseClient
-                        .from('products')
-                        .update({ stock: p.stock - item.quantity })
-                        .eq('id', item.id);
+                if (rpcError) {
+                    console.warn('Falha RPC ao baixar estoque para:', item.id, rpcError);
                 }
             } catch (e) {
-                console.warn('Aviso: estoque não decrementado para', item.id, e);
+                console.warn('Aviso: exceção ao tentar decrementar estoque para', item.id, e);
             }
         }
 

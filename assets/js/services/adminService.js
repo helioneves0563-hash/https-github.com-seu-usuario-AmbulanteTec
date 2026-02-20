@@ -83,6 +83,10 @@ const adminService = {
 
     /** Cria propaganda global */
     async createAd(adData) {
+        // Garantir que a URL do CTA tenha protocolo
+        if (adData.cta_url && !adData.cta_url.match(/^https?:\/\//)) {
+            adData.cta_url = 'https://' + adData.cta_url;
+        }
         const { data, error } = await window.supabaseClient
             .from('ads')
             .insert({ ...adData, establishment_id: null, active: true })

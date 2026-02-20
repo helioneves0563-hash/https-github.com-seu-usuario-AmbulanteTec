@@ -1,16 +1,17 @@
 /**
- * Serviço de Anúncios
- * Gerencia os anúncios exibidos para os clientes após confirmação de pedido
+ * AdService — Serviço de Propagandas
+ * Propagandas são globais (establishment_id IS NULL), gerenciadas pelo admin.
  */
 const adService = {
+
     /**
-     * Busca todos os anúncios ativos do estabelecimento
+     * Busca propagandas globais ativas (gerenciadas pelo gestor do app)
      */
-    async getActiveAds(establishmentId) {
+    async getActiveAds() {
         const { data, error } = await window.supabaseClient
             .from('ads')
             .select('*')
-            .eq('establishment_id', establishmentId)
+            .is('establishment_id', null)
             .eq('active', true)
             .order('created_at', { ascending: false });
 
@@ -18,134 +19,77 @@ const adService = {
             console.error('Erro ao buscar anúncios:', error);
             return [];
         }
-        return data;
+        return data || [];
     },
 
     /**
-     * Retorna um anúncio aleatório ativo do estabelecimento
+     * Exibe modal de propaganda após pedido confirmado
+     * Seleciona aleatoriamente dentre os anúncios globais ativos
      */
-    async getRandomAd(establishmentId) {
-        const ads = await this.getActiveAds(establishmentId);
-        if (ads.length === 0) return null;
-        return ads[Math.floor(Math.random() * ads.length)];
-    },
+    async showPostOrderAd(onDismiss) {
+        const ads = await this.getActiveAds();
+        if (!ads || ads.length === 0) {
+            if (onDismiss) onDismiss();
+            return;
+        }
 
-    /**
-     * Cria ou atualiza um anúncio (uso interno do painel do estabelecimento)
-     */
-    async upsertAd(adData) {
-        const estab = await window.establishmentService.getMyEstablishment();
-        if (!estab) throw new Error('Estabelecimento não encontrado.');
+        const ad = ads[Math.floor(Math.random() * ads.length)];
+        const adDuration = 8000;
 
-        const { data, error } = await window.supabaseClient
-            .from('ads')
-            .upsert({ ...adData, establishment_id: estab.id })
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
-    },
-
-    /**
-     * Remove um anúncio
-     */
-    async deleteAd(id) {
-        const { error } = await window.supabaseClient
-            .from('ads')
-            .delete()
-            .eq('id', id);
-
-        if (error) throw error;
-        return true;
-    },
-
-    /**
-     * Exibe o modal de propaganda (chamado após confirmação de pedido)
-     * @param {string} establishmentId
-     * @param {Function} onClose - callback ao fechar
-     */
-    async showAdModal(establishmentId, onClose) {
-        const ad = await this.getRandomAd(establishmentId);
-
-        // Remover modal anterior se existir
-        const existing = document.getElementById('ad-modal-overlay');
-        if (existing) existing.remove();
-
-        // Criar overlay
         const overlay = document.createElement('div');
         overlay.id = 'ad-modal-overlay';
         overlay.style.cssText = `
-            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
             display: flex; align-items: center; justify-content: center;
-            z-index: 9999; padding: 1rem;
-            animation: fadeIn 0.3s ease;
+            padding: 20px; animation: fadeIn 0.3s ease;
         `;
 
-        if (!ad) {
-            // Sem anúncios: exibir apenas mensagem de sucesso
-            overlay.innerHTML = `
-                <div style="background: white; border-radius: 1.5rem; padding: 2rem; text-align: center; max-width: 380px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.3);">
-                    <div style="font-size: 4rem; margin-bottom: 1rem;">🎉</div>
-                    <h2 style="font-size: 1.5rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.5rem;">Pedido Confirmado!</h2>
-                    <p style="color: #666; margin-bottom: 1.5rem;">Seu pedido foi recebido com sucesso. Aguarde!</p>
-                    <button id="ad-close-btn" style="background: #6C63FF; color: white; border: none; border-radius: 0.75rem; padding: 0.75rem 2rem; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%;">Fechar</button>
-                </div>
-            `;
-        } else {
-            overlay.innerHTML = `
-                <div style="background: white; border-radius: 1.5rem; overflow: hidden; max-width: 380px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.3); position: relative;">
-                    <div style="background: linear-gradient(135deg, #6C63FF, #3ec6e0); padding: 1rem 1rem 0.5rem; text-align: center;">
-                        <span style="color: rgba(255,255,255,0.7); font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">✨ Anúncio Patrocinado</span>
+        const progressId = `ad-progress-${Date.now()}`;
+
+        overlay.innerHTML = `
+            <style>
+                @keyframes fadeIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+                @keyframes shrink { from { width:100%; } to { width:0%; } }
+                #${progressId} { animation: shrink ${adDuration}ms linear forwards; }
+            </style>
+            <div style="background:#1c1c1e; border-radius:24px; overflow:hidden; width:100%; max-width:400px; color:white; box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+                ${ad.image_url ? `<img src="${ad.image_url}" style="width:100%;height:200px;object-fit:cover;" onerror="this.style.display='none'" />` : ''}
+                <div style="padding:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <span style="background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;">📢 PUBLICIDADE</span>
+                        <span id="ad-countdown" style="font-size:12px;opacity:0.6;">Fechando em 8s</span>
                     </div>
-                    ${ad.image_url ? `<img src="${ad.image_url}" style="width: 100%; height: 180px; object-fit: cover;" alt="${ad.title}" />` : ''}
-                    <div style="padding: 1.5rem; text-align: center;">
-                        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🎉</div>
-                        <h3 style="font-size: 1.2rem; font-weight: 800; color: #1a1a2e; margin-bottom: 0.5rem;">${ad.title}</h3>
-                        ${ad.description ? `<p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">${ad.description}</p>` : ''}
-                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                            ${ad.cta_url ? `
-                            <a href="${ad.cta_url}" target="_blank" style="flex: 1; background: #6C63FF; color: white; border: none; border-radius: 0.75rem; padding: 0.75rem; font-size: 0.9rem; font-weight: 700; cursor: pointer; text-decoration: none; display: flex; align-items: center; justify-content: center;">
-                                ${ad.cta_text || 'Saiba mais'}
-                            </a>` : ''}
-                            <button id="ad-close-btn" style="flex: 1; background: #f0f0f0; color: #333; border: none; border-radius: 0.75rem; padding: 0.75rem; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
-                                Fechar
-                            </button>
-                        </div>
+                    <h3 style="font-size:20px;font-weight:800;margin-bottom:8px;">${ad.title}</h3>
+                    ${ad.description ? `<p style="font-size:14px;opacity:0.75;margin-bottom:16px;line-height:1.5;">${ad.description}</p>` : ''}
+                    <div style="display:flex;gap:10px;">
+                        ${ad.cta_url ? `<a href="${ad.cta_url}" target="_blank" style="flex:1;background:#6C63FF;color:white;border:none;padding:14px;border-radius:14px;font-weight:700;font-size:15px;text-align:center;text-decoration:none;">${ad.cta_text || 'Saiba mais'}</a>` : ''}
+                        <button id="ad-close-btn" style="background:rgba(255,255,255,0.1);color:white;border:none;padding:14px 18px;border-radius:14px;font-weight:600;cursor:pointer;font-size:15px;">✕</button>
                     </div>
-                    <div id="ad-timer-bar" style="height: 3px; background: #6C63FF; width: 100%; transition: width linear;"></div>
+                    <div style="margin-top:12px;height:3px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;">
+                        <div id="${progressId}" style="height:100%;background:#6C63FF;border-radius:10px;"></div>
+                    </div>
                 </div>
-            `;
-        }
+            </div>
+        `;
 
         document.body.appendChild(overlay);
 
-        // Auto-fechar em 8 segundos com barra de progresso
-        const DURATION = 8000;
-        const timerBar = document.getElementById('ad-timer-bar');
-        if (timerBar) {
-            timerBar.style.transition = `width ${DURATION}ms linear`;
-            setTimeout(() => { timerBar.style.width = '0%'; }, 50);
-        }
+        const dismiss = () => {
+            overlay.remove();
+            if (onDismiss) onDismiss();
+        };
 
-        const autoClose = setTimeout(() => { overlay.remove(); if (onClose) onClose(); }, DURATION);
+        document.getElementById('ad-close-btn').onclick = dismiss;
 
-        const closeBtn = document.getElementById('ad-close-btn');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                clearTimeout(autoClose);
-                overlay.remove();
-                if (onClose) onClose();
-            });
-        }
-
-        // Adicionar estilo de animação
-        if (!document.getElementById('ad-modal-style')) {
-            const style = document.createElement('style');
-            style.id = 'ad-modal-style';
-            style.textContent = `@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`;
-            document.head.appendChild(style);
-        }
+        // Countdown
+        let remaining = adDuration / 1000;
+        const countdown = document.getElementById('ad-countdown');
+        const timer = setInterval(() => {
+            remaining--;
+            if (countdown) countdown.textContent = `Fechando em ${remaining}s`;
+            if (remaining <= 0) { clearInterval(timer); dismiss(); }
+        }, 1000);
     }
 };
 

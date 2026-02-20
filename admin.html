@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AmbulanteTec — Painel do Gestor</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabaseConfig.js"></script>
+    <script src="assets/js/services/authService.js"></script>
+    <script src="assets/js/services/adminService.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        admin: '#7C3AED',
+                        'admin-dark': '#6D28D9',
+                        'admin-light': '#EDE9FE',
+                        bg: '#0F0F14',
+                        surface: '#1A1A24',
+                        'surface-2': '#242432',
+                        border: '#2E2E40',
+                        accent: '#F59E0B',
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0F0F14;
+            color: #F0F0F8;
+        }
+
+        .glass {
+            background: rgba(26, 26, 36, 0.8);
+            backdrop-filter: blur(20px);
+        }
+
+        .tab-btn {
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #7C3AED;
+            color: white;
+        }
+
+        .tag-code {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.15em;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.3s ease;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+
+    <!-- Header -->
+    <header class="glass border-b border-border sticky top-0 z-40 px-6 py-4">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 bg-admin rounded-xl flex items-center justify-center">
+                    <span class="material-icons-round text-white">admin_panel_settings</span>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white">Painel do Gestor</h1>
+                    <p class="text-xs text-purple-400">AmbulanteTec — Administração</p>
+                </div>
+            </div>
+            <button onclick="window.authService.signOut()"
+                class="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-surface-2">
+                <span class="material-icons-round text-base">logout</span>
+                Sair
+            </button>
+        </div>
+    </header>
+
+    <!-- Tabs -->
+    <div class="max-w-5xl mx-auto px-6 pt-6">
+        <div class="flex gap-2 bg-surface rounded-2xl p-1.5 w-fit mb-8">
+            <button id="tab-estab" onclick="switchTab('estab')"
+                class="tab-btn active px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2">
+                <span class="material-icons-round text-base">storefront</span>
+                Estabelecimentos
+            </button>
+            <button id="tab-ads" onclick="switchTab('ads')"
+                class="tab-btn text-gray-400 px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2">
+                <span class="material-icons-round text-base">campaign</span>
+                Propagandas Globais
+            </button>
+        </div>
+    </div>
+
+    <main class="max-w-5xl mx-auto px-6 pb-20">
+
+        <!-- ═══ TAB: ESTABELECIMENTOS ═══ -->
+        <div id="panel-estab" class="animate-in">
+
+            <!-- Formulário de cadastro -->
+            <div class="bg-surface rounded-3xl p-6 border border-border mb-6">
+                <h2 class="text-base font-bold mb-5 flex items-center gap-2">
+                    <span class="material-icons-round text-admin text-lg">add_business</span>
+                    Pré-cadastrar Estabelecimento
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Nome do
+                            Estabelecimento</label>
+                        <input id="new-estab-name" type="text" placeholder="Ex: Padaria do Zé"
+                            class="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-admin focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Código
+                            (opcional)</label>
+                        <input id="new-estab-code" type="text" placeholder="Ex: PADARIA-25" maxlength="14"
+                            class="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-admin focus:outline-none transition-colors uppercase tracking-widest tag-code">
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2 mb-4">ℹ️ Se o código for deixado em branco, será gerado
+                    automaticamente.</p>
+                <button onclick="createEstab()" id="btn-create-estab"
+                    class="bg-admin hover:bg-admin-dark text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors flex items-center gap-2 active:scale-95">
+                    <span class="material-icons-round text-base">add</span>
+                    Cadastrar Estabelecimento
+                </button>
+            </div>
+
+            <!-- Lista de estabelecimentos -->
+            <div class="bg-surface rounded-3xl border border-border overflow-hidden">
+                <div class="px-6 py-4 border-b border-border flex items-center justify-between">
+                    <h2 class="font-bold flex items-center gap-2">
+                        <span class="material-icons-round text-admin text-lg">list</span>
+                        Todos os Estabelecimentos
+                    </h2>
+                    <span id="estab-count"
+                        class="bg-admin/20 text-admin text-xs font-bold px-3 py-1 rounded-full">0</span>
+                </div>
+                <div id="estab-list" class="divide-y divide-border">
+                    <div class="px-6 py-10 text-center text-gray-500 text-sm">
+                        <span class="material-icons-round text-4xl text-gray-700 block mb-2">storefront</span>
+                        Carregando estabelecimentos...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ TAB: PROPAGANDAS ═══ -->
+        <div id="panel-ads" class="hidden animate-in">
+
+            <!-- Formulário de anúncio -->
+            <div class="bg-surface rounded-3xl p-6 border border-border mb-6">
+                <h2 class="text-base font-bold mb-5 flex items-center gap-2">
+                    <span class="material-icons-round text-accent text-lg">add_reaction</span>
+                    Nova Propaganda Global
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Título
+                            *</label>
+                        <input id="ad-title" type="text" placeholder="Ex: Promoção Imperdível!"
+                            class="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-accent focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">URL da
+                            Imagem</label>
+                        <input id="ad-image" type="url" placeholder="https://..."
+                            class="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-accent focus:outline-none transition-colors">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label
+                            class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Descrição</label>
+                        <textarea id="ad-description" rows="2" placeholder="Aproveite a oferta especial de hoje..."
+                            class="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-accent focus:outline-none transition-colors resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Texto
+                            do Botão</label>
+                        <input id="ad-cta-text" type="text" value="Saiba mais"
+                            class="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-accent focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Link do
+                            Botão</label>
+                        <input id="ad-cta-url" type="url" placeholder="https://..."
+                            class="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:border-accent focus:outline-none transition-colors">
+                    </div>
+                </div>
+                <button onclick="createAd()" id="btn-create-ad"
+                    class="mt-4 bg-accent hover:bg-yellow-500 text-black font-bold px-6 py-3 rounded-xl text-sm transition-colors flex items-center gap-2 active:scale-95">
+                    <span class="material-icons-round text-base">campaign</span>
+                    Publicar Propaganda
+                </button>
+            </div>
+
+            <!-- Lista de anúncios -->
+            <div class="bg-surface rounded-3xl border border-border overflow-hidden">
+                <div class="px-6 py-4 border-b border-border flex items-center justify-between">
+                    <h2 class="font-bold flex items-center gap-2">
+                        <span class="material-icons-round text-accent text-lg">collections</span>
+                        Propagandas Ativas
+                    </h2>
+                    <span id="ads-count"
+                        class="bg-accent/20 text-accent text-xs font-bold px-3 py-1 rounded-full">0</span>
+                </div>
+                <div id="ads-list" class="divide-y divide-border">
+                    <div class="px-6 py-10 text-center text-gray-500 text-sm">
+                        <span class="material-icons-round text-4xl text-gray-700 block mb-2">campaign</span>
+                        Carregando propagandas...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentTab = 'estab';
+
+        /* ─── Init ─── */
+        window.addEventListener('load', async () => {
+            // Verificar session
+            const { data: { session } } = await window.supabaseClient.auth.getSession();
+            if (!session) { window.location.href = 'login.html'; return; }
+
+            // Verificar permissão admin
+            const ok = await window.adminService.isAdmin();
+            if (!ok) {
+                alert('Acesso negado. Esta área é restrita ao gestor do aplicativo.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            loadEstabs();
+        });
+
+        /* ─── Tabs ─── */
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('panel-estab').classList.toggle('hidden', tab !== 'estab');
+            document.getElementById('panel-ads').classList.toggle('hidden', tab !== 'ads');
+            document.getElementById('tab-estab').classList.toggle('active', tab === 'estab');
+            document.getElementById('tab-estab').classList.toggle('text-gray-400', tab !== 'estab');
+            document.getElementById('tab-ads').classList.toggle('active', tab === 'ads');
+            document.getElementById('tab-ads').classList.toggle('text-gray-400', tab !== 'ads');
+            if (tab === 'ads') loadAds();
+        }
+
+        /* ─── Estabelecimentos ─── */
+        async function loadEstabs() {
+            const list = document.getElementById('estab-list');
+            try {
+                const estabs = await window.adminService.getAllEstablishments();
+                document.getElementById('estab-count').textContent = estabs.length;
+
+                if (estabs.length === 0) {
+                    list.innerHTML = `
+                        <div class="px-6 py-10 text-center text-gray-500 text-sm">
+                            <span class="material-icons-round text-4xl text-gray-700 block mb-2">storefront</span>
+                            Nenhum estabelecimento cadastrado ainda.
+                        </div>`;
+                    return;
+                }
+
+                list.innerHTML = estabs.map(e => {
+                    const members = e.establishment_members?.[0]?.count || 0;
+                    return `
+                    <div class="px-6 py-4 flex items-center justify-between hover:bg-surface-2 transition-colors group">
+                        <div class="flex items-center gap-4">
+                            <div class="h-11 w-11 bg-admin/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <span class="material-icons-round text-admin">storefront</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-white">${e.name}</p>
+                                <div class="flex items-center gap-3 mt-0.5">
+                                    <span class="tag-code text-xs bg-surface-2 text-admin px-2.5 py-0.5 rounded-lg border border-admin/30 font-bold">${e.code}</span>
+                                    <span class="text-xs text-gray-500">${members} vendedor${members !== 1 ? 'es' : ''}</span>
+                                    <span class="text-xs text-gray-600">${new Date(e.created_at).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="copyCode('${e.code}')" title="Copiar código"
+                                class="p-2 text-gray-400 hover:text-white hover:bg-surface rounded-xl transition-colors text-xs flex items-center gap-1.5">
+                                <span class="material-icons-round text-base">content_copy</span>
+                                ${e.code}
+                            </button>
+                            <button onclick="deleteEstab('${e.id}', '${e.name.replace(/'/g, "\\'")}'); event.stopPropagation();"
+                                class="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-xl transition-colors">
+                                <span class="material-icons-round text-base">delete_outline</span>
+                            </button>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                list.innerHTML = `<div class="px-6 py-6 text-center text-red-400 text-sm">Erro: ${e.message}</div>`;
+            }
+        }
+
+        async function createEstab() {
+            const name = document.getElementById('new-estab-name').value.trim();
+            const code = document.getElementById('new-estab-code').value.trim();
+            if (!name) { alert('Digite o nome do estabelecimento.'); return; }
+
+            const btn = document.getElementById('btn-create-estab');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-icons-round text-base animate-spin">refresh</span> Criando...';
+
+            try {
+                const estab = await window.adminService.createEstablishment(name, code);
+                document.getElementById('new-estab-name').value = '';
+                document.getElementById('new-estab-code').value = '';
+                await loadEstabs();
+                showToast(`✅ "${estab.name}" criado! Código: ${estab.code}`);
+            } catch (e) {
+                alert('Erro: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-icons-round text-base">add</span> Cadastrar Estabelecimento';
+            }
+        }
+
+        function copyCode(code) {
+            navigator.clipboard.writeText(code).then(() => showToast(`📋 Código ${code} copiado!`));
+        }
+
+        async function deleteEstab(id, name) {
+            if (!confirm(`Excluir o estabelecimento "${name}"?\n\nEsta ação removerá todos os membros e dados vinculados.`)) return;
+            try {
+                await window.adminService.deleteEstablishment(id);
+                await loadEstabs();
+                showToast(`🗑️ "${name}" excluído.`);
+            } catch (e) { alert('Erro: ' + e.message); }
+        }
+
+        /* ─── Propagandas ─── */
+        async function loadAds() {
+            const list = document.getElementById('ads-list');
+            try {
+                const ads = await window.adminService.getAllAds();
+                document.getElementById('ads-count').textContent = ads.length;
+
+                if (ads.length === 0) {
+                    list.innerHTML = `
+                        <div class="px-6 py-10 text-center text-gray-500 text-sm">
+                            <span class="material-icons-round text-4xl text-gray-700 block mb-2">campaign</span>
+                            Nenhuma propaganda cadastrada ainda.
+                        </div>`;
+                    return;
+                }
+
+                list.innerHTML = ads.map(ad => `
+                    <div class="px-6 py-4 flex items-center justify-between hover:bg-surface-2 transition-colors group">
+                        <div class="flex items-center gap-4">
+                            ${ad.image_url
+                        ? `<img src="${ad.image_url}" class="h-14 w-14 rounded-xl object-cover flex-shrink-0" onerror="this.style.display='none'" />`
+                        : `<div class="h-14 w-14 bg-accent/20 rounded-xl flex items-center justify-center flex-shrink-0"><span class="material-icons-round text-accent text-2xl">campaign</span></div>`
+                    }
+                            <div>
+                                <p class="font-semibold text-white">${ad.title}</p>
+                                ${ad.description ? `<p class="text-xs text-gray-400 mt-0.5 max-w-xs truncate">${ad.description}</p>` : ''}
+                                <div class="flex items-center gap-2 mt-1">
+                                    ${ad.cta_url ? `<a href="${ad.cta_url}" target="_blank" class="text-xs text-accent hover:underline flex items-center gap-1"><span class="material-icons-round text-xs">link</span>${ad.cta_text || 'Saiba mais'}</a>` : ''}
+                                    <span class="text-xs text-gray-600">${new Date(ad.created_at).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="deleteAd('${ad.id}', '${ad.title.replace(/'/g, "\\'")}'); event.stopPropagation();"
+                            class="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-xl transition-colors opacity-0 group-hover:opacity-100">
+                            <span class="material-icons-round text-base">delete_outline</span>
+                        </button>
+                    </div>
+                `).join('');
+            } catch (e) {
+                list.innerHTML = `<div class="px-6 py-6 text-center text-red-400 text-sm">Erro: ${e.message}</div>`;
+            }
+        }
+
+        async function createAd() {
+            const title = document.getElementById('ad-title').value.trim();
+            if (!title) { alert('O título é obrigatório.'); return; }
+
+            const btn = document.getElementById('btn-create-ad');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-icons-round text-base">refresh</span> Publicando...';
+
+            try {
+                await window.adminService.createAd({
+                    title,
+                    description: document.getElementById('ad-description').value.trim() || null,
+                    image_url: document.getElementById('ad-image').value.trim() || null,
+                    cta_text: document.getElementById('ad-cta-text').value.trim() || 'Saiba mais',
+                    cta_url: document.getElementById('ad-cta-url').value.trim() || null,
+                });
+                document.getElementById('ad-title').value = '';
+                document.getElementById('ad-description').value = '';
+                document.getElementById('ad-image').value = '';
+                document.getElementById('ad-cta-url').value = '';
+                await loadAds();
+                showToast('✅ Propaganda publicada em todos os estabelecimentos!');
+            } catch (e) {
+                alert('Erro: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-icons-round text-base">campaign</span> Publicar Propaganda';
+            }
+        }
+
+        async function deleteAd(id, title) {
+            if (!confirm(`Excluir a propaganda "${title}"?`)) return;
+            try {
+                await window.adminService.deleteAd(id);
+                await loadAds();
+                showToast(`🗑️ Propaganda excluída.`);
+            } catch (e) { alert('Erro: ' + e.message); }
+        }
+
+        /* ─── Toast ─── */
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1A1A24;border:1px solid #2E2E40;color:white;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.4);white-space:nowrap;';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3500);
+        }
+    </script>
+</body>
+
+</html>

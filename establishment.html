@@ -119,51 +119,18 @@
             </div>
         </div>
 
-        <!-- Anúncios -->
-        <div id="section-ads"
-            class="hidden bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-3">
-                    <div
-                        class="h-10 w-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center">
-                        <span class="material-icons-round text-yellow-600 dark:text-yellow-400">campaign</span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold">Meus Anúncios</h3>
-                        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Exibidos para
-                            clientes após os pedidos</p>
-                    </div>
+        <!-- Propagandas — gerenciadas pelo gestor do app -->
+        <div
+            class="bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+            <div class="flex items-center space-x-3">
+                <div class="h-10 w-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl flex items-center justify-center">
+                    <span class="material-icons-round text-yellow-500">campaign</span>
                 </div>
-                <button onclick="showAdForm()"
-                    class="bg-primary text-white p-2 rounded-xl hover:bg-purple-700 transition-colors">
-                    <span class="material-icons-round text-sm">add</span>
-                </button>
-            </div>
-
-            <div id="ad-form-container" class="hidden mb-4 bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 space-y-3">
-                <h4 class="font-semibold text-sm">Novo Anúncio</h4>
-                <input id="ad-title" type="text" placeholder="Título do anúncio"
-                    class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm">
-                <textarea id="ad-description" placeholder="Descrição (opcional)" rows="2"
-                    class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm resize-none"></textarea>
-                <input id="ad-image" type="url" placeholder="URL da imagem (opcional)"
-                    class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm">
-                <div class="flex space-x-2">
-                    <input id="ad-cta-text" type="text" placeholder="Texto do botão" value="Saiba mais"
-                        class="flex-1 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm">
-                    <input id="ad-cta-url" type="url" placeholder="Link do botão"
-                        class="flex-1 bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm">
+                <div>
+                    <h3 class="font-bold">Propagandas</h3>
+                    <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Gerenciadas pelo gestor
+                        do aplicativo — aparecem automaticamente após cada pedido</p>
                 </div>
-                <div class="flex space-x-2">
-                    <button onclick="saveAd()"
-                        class="flex-1 bg-primary text-white rounded-xl py-2.5 text-sm font-bold hover:bg-purple-700 transition-colors">Salvar</button>
-                    <button onclick="hideAdForm()"
-                        class="flex-1 bg-gray-200 dark:bg-gray-800 text-text-primary-light dark:text-text-primary-dark rounded-xl py-2.5 text-sm font-semibold">Cancelar</button>
-                </div>
-            </div>
-
-            <div id="ads-list" class="space-y-3">
-                <p class="text-center py-4 opacity-50 text-sm">Nenhum anúncio cadastrado.</p>
             </div>
         </div>
 
@@ -287,10 +254,8 @@
             // Mostrar todas as seções
             document.getElementById('section-portal').classList.remove('hidden');
             document.getElementById('section-members').classList.remove('hidden');
-            document.getElementById('section-ads').classList.remove('hidden');
 
             loadMembers();
-            loadAds();
         }
 
         async function loadMembers() {

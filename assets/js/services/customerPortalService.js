@@ -78,8 +78,7 @@ const customerPortalService = {
                 customer_id: customerId,
                 establishment_id: establishmentId,
                 total,
-                status: 'Aberto',
-                notes: `Pedido feito pelo cliente via portal`
+                status: 'Aberto'
             })
             .select()
             .single();

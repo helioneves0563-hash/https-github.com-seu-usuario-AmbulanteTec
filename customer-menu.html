@@ -453,6 +453,8 @@
             if (cart.length === 0) { alert('Adicione itens ao carrinho primeiro!'); return; }
 
             const btn = document.getElementById('confirm-btn');
+            if (btn.disabled) return;
+
             btn.disabled = true;
             btn.textContent = '⏳ Enviando pedido...';
 
@@ -467,8 +469,10 @@
                 renderProducts(allProducts);
 
                 // Exibir propaganda (se houver adService disponível)
-                if (window.adService) {
-                    window.adService.showPostOrderAd(() => { });
+                if (window.adService && typeof window.adService.showPostOrderAd === 'function') {
+                    window.adService.showPostOrderAd(() => {
+                        // Nada extra no momento, permanece na mesma tela zero bala
+                    });
                 } else {
                     alert('✅ Pedido confirmado! Obrigado!');
                 }
@@ -476,7 +480,6 @@
             } catch (e) {
                 console.error(e);
                 alert('Erro ao enviar pedido: ' + e.message);
-            } finally {
                 btn.disabled = false;
                 btn.textContent = '✅ Confirmar Pedido';
             }

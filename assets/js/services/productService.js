@@ -60,9 +60,6 @@ const productService = {
         return data[0];
     },
 
-    /**
-     * Remove um produto
-     */
     async deleteProduct(id) {
         const { error } = await window.supabaseClient
             .from('products')
@@ -70,6 +67,22 @@ const productService = {
             .eq('id', id);
 
         if (error) {
+            // Se o erro for de restrição de chave estrangeira (já existem pedidos com esse item)
+            // vamos fazer um "soft delete", zerando o estoque e inativando para venda
+            if (error.code === '23503' || error.message.includes('foreign key')) {
+                console.warn('Produto vinculado a pedidos históricos. Aplicando soft delete (ocultando e zerando estoque).');
+                const { error: updateError } = await window.supabaseClient
+                    .from('products')
+                    .update({ available: false, stock: 0 })
+                    .eq('id', id);
+
+                if (updateError) {
+                    console.error('Erro ao ocultar produto:', updateError);
+                    throw updateError;
+                }
+                return true;
+            }
+
             console.error('Erro ao excluir produto:', error);
             throw error;
         }

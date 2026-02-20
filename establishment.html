@@ -55,7 +55,7 @@
 
     <main class="max-w-2xl mx-auto px-4 py-6 space-y-6">
 
-        <!-- Info do Estabelecimento -->
+        <!-- Card Principal (setup ou info) -->
         <div id="estab-card" class="bg-gradient-to-br from-primary to-purple-700 rounded-3xl p-6 text-white shadow-xl">
             <div class="flex items-start justify-between">
                 <div>
@@ -83,8 +83,8 @@
         </div>
 
         <!-- Link do Cardápio do Cliente -->
-        <div
-            class="bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+        <div id="section-portal"
+            class="hidden bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
             <div class="flex items-center space-x-3 mb-4">
                 <div class="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
                     <span class="material-icons-round text-green-600 dark:text-green-400">qr_code</span>
@@ -95,10 +95,9 @@
                         fazerem pedidos</p>
                 </div>
             </div>
-            <div id="customer-link-box"
-                class="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 flex items-center justify-between">
+            <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-3 flex items-center justify-between">
                 <span id="customer-link"
-                    class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate mr-2">Carregando...</span>
+                    class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate mr-2">---</span>
                 <button onclick="copyCustomerLink()"
                     class="bg-primary text-white px-3 py-1.5 rounded-lg text-xs font-bold flex-shrink-0 flex items-center space-x-1 hover:bg-purple-700 transition-colors">
                     <span class="material-icons-round text-sm">share</span>
@@ -107,9 +106,9 @@
             </div>
         </div>
 
-        <!-- Vendedores do Estabelecimento -->
-        <div
-            class="bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+        <!-- Vendedores -->
+        <div id="section-members"
+            class="hidden bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-base">Vendedores</h3>
                 <span id="members-count"
@@ -120,9 +119,9 @@
             </div>
         </div>
 
-        <!-- Gestão de Anúncios -->
-        <div
-            class="bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+        <!-- Anúncios -->
+        <div id="section-ads"
+            class="hidden bg-surface-light dark:bg-surface-dark rounded-3xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-3">
                     <div
@@ -141,7 +140,6 @@
                 </button>
             </div>
 
-            <!-- Formulário de novo anúncio (oculto por padrão) -->
             <div id="ad-form-container" class="hidden mb-4 bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 space-y-3">
                 <h4 class="font-semibold text-sm">Novo Anúncio</h4>
                 <input id="ad-title" type="text" placeholder="Título do anúncio"
@@ -165,7 +163,7 @@
             </div>
 
             <div id="ads-list" class="space-y-3">
-                <p class="text-center py-4 opacity-50 text-sm">Carregando anúncios...</p>
+                <p class="text-center py-4 opacity-50 text-sm">Nenhum anúncio cadastrado.</p>
             </div>
         </div>
 
@@ -176,35 +174,102 @@
         let currentUserId = null;
 
         async function init() {
-            // Verificar autenticação
             const { data: { session } } = await window.supabaseClient.auth.getSession();
             if (!session) { window.location.href = 'login.html'; return; }
-
             currentUserId = session.user.id;
 
-            // Carregar estabelecimento
             currentEstab = await window.establishmentService.getMyEstablishment();
 
             if (!currentEstab) {
-                document.getElementById('estab-name').textContent = 'Nenhum estabelecimento';
-                document.getElementById('estab-code').textContent = '---';
-                document.getElementById('members-list').innerHTML = '<p class="text-center py-4 opacity-50 text-sm">Sem estabelecimento vinculado.</p>';
-                return;
+                showSetupForm();
+            } else {
+                showEstabPanel();
             }
+        }
 
-            // Preencher info
+        /* ─── Estado: sem estabelecimento ─── */
+        function showSetupForm() {
+            document.getElementById('estab-card').innerHTML = `
+                <div class="text-center mb-5">
+                    <div class="text-5xl mb-2">🏪</div>
+                    <h2 class="text-xl font-black">Configure seu Estabelecimento</h2>
+                    <p class="text-white/70 text-sm mt-1">Crie um novo ou entre em um existente</p>
+                </div>
+                <div class="bg-white/10 rounded-2xl p-4 mb-3">
+                    <p class="text-white/80 text-xs font-bold uppercase tracking-widest mb-3">✨ Criar Novo</p>
+                    <input id="setup-name" type="text" placeholder="Nome (ex: Lanchonete do João)"
+                        class="w-full bg-white/20 border border-white/30 rounded-xl px-3 py-3 text-white placeholder-white/50 text-sm mb-3 outline-none focus:bg-white/30">
+                    <button onclick="createEstabNow()" id="btn-create"
+                        class="w-full bg-white text-purple-700 font-black rounded-xl py-3 text-sm hover:bg-white/90 transition-colors active:scale-95">
+                        Criar Estabelecimento
+                    </button>
+                </div>
+                <div class="flex items-center gap-2 my-3">
+                    <div class="flex-1 h-px bg-white/20"></div>
+                    <span class="text-white/50 text-xs font-semibold">OU</span>
+                    <div class="flex-1 h-px bg-white/20"></div>
+                </div>
+                <div class="bg-white/10 rounded-2xl p-4">
+                    <p class="text-white/80 text-xs font-bold uppercase tracking-widest mb-3">🔑 Entrar com Código</p>
+                    <input id="setup-code" type="text" placeholder="Ex: LANCH-A3K9" maxlength="12"
+                        class="w-full bg-white/20 border border-white/30 rounded-xl px-3 py-3 text-white placeholder-white/50 text-sm mb-3 outline-none focus:bg-white/30 uppercase tracking-widest">
+                    <button onclick="joinEstabNow()" id="btn-join"
+                        class="w-full bg-white/20 hover:bg-white/30 text-white font-black rounded-xl py-3 text-sm transition-colors border border-white/30 active:scale-95">
+                        Entrar no Estabelecimento
+                    </button>
+                </div>
+            `;
+        }
+
+        async function createEstabNow() {
+            const name = document.getElementById('setup-name')?.value.trim();
+            if (!name) { alert('Digite o nome do estabelecimento.'); return; }
+            const btn = document.getElementById('btn-create');
+            btn.textContent = 'Criando...';
+            btn.disabled = true;
+            try {
+                await window.establishmentService.createEstablishment(name);
+                window.location.reload();
+            } catch (e) {
+                alert('Erro ao criar: ' + e.message);
+                btn.textContent = 'Criar Estabelecimento';
+                btn.disabled = false;
+            }
+        }
+
+        async function joinEstabNow() {
+            const code = document.getElementById('setup-code')?.value.trim();
+            if (!code) { alert('Digite o código do estabelecimento.'); return; }
+            const btn = document.getElementById('btn-join');
+            btn.textContent = 'Entrando...';
+            btn.disabled = true;
+            try {
+                await window.establishmentService.joinEstablishment(code);
+                window.location.reload();
+            } catch (e) {
+                alert('Erro: ' + e.message);
+                btn.textContent = 'Entrar no Estabelecimento';
+                btn.disabled = false;
+            }
+        }
+
+        /* ─── Estado: estabelecimento encontrado ─── */
+        function showEstabPanel() {
             document.getElementById('estab-name').textContent = currentEstab.name;
             document.getElementById('estab-code').textContent = currentEstab.code;
             document.getElementById('estab-role').textContent = currentEstab.role === 'owner' ? '👑 Proprietário' : '🛒 Vendedor';
 
-            // Link do cliente
             const portalUrl = `${window.location.origin}/customer-portal.html?est=${currentEstab.code}`;
             document.getElementById('customer-link').textContent = portalUrl;
             document.getElementById('customer-link').setAttribute('data-url', portalUrl);
 
-            // Carregar membros e anúncios
-            await loadMembers();
-            await loadAds();
+            // Mostrar todas as seções
+            document.getElementById('section-portal').classList.remove('hidden');
+            document.getElementById('section-members').classList.remove('hidden');
+            document.getElementById('section-ads').classList.remove('hidden');
+
+            loadMembers();
+            loadAds();
         }
 
         async function loadMembers() {
@@ -272,7 +337,8 @@
         }
 
         function copyCode() {
-            const code = document.getElementById('estab-code').textContent;
+            const code = document.getElementById('estab-code')?.textContent;
+            if (!code || code === '---') return;
             navigator.clipboard.writeText(code).then(() => {
                 const btn = document.getElementById('copy-code-btn');
                 btn.innerHTML = '<span class="material-icons-round text-sm">check</span><span>Copiado!</span>';
@@ -281,7 +347,8 @@
         }
 
         function copyCustomerLink() {
-            const url = document.getElementById('customer-link').getAttribute('data-url') || document.getElementById('customer-link').textContent;
+            const url = document.getElementById('customer-link')?.getAttribute('data-url') || '';
+            if (!url) return;
             navigator.clipboard.writeText(url).then(() => { alert('Link copiado! Compartilhe com seus clientes.'); });
         }
 
@@ -291,7 +358,6 @@
         async function saveAd() {
             const title = document.getElementById('ad-title').value.trim();
             if (!title) { alert('Informe o título do anúncio.'); return; }
-
             try {
                 await window.adService.upsertAd({
                     title,
@@ -318,7 +384,6 @@
             } catch (e) { alert('Erro: ' + e.message); }
         }
 
-        // Inicializar após scripts carregarem
         window.addEventListener('load', init);
     </script>
 </body>

@@ -255,7 +255,8 @@ async function initProductsPage() {
         };
 
         const render = () => {
-            let filtered = allProducts;
+            // Filtra produtos que não sofreram "soft delete" (available !== false)
+            let filtered = allProducts.filter(p => p.available !== false);
 
             // Filtro por Categoria
             if (currentFilter !== 'all') {

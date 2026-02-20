@@ -47,6 +47,21 @@ const adService = {
 
         const progressId = `ad-progress-${Date.now()}`;
 
+        // Normalizar URL de imagem (converte Google Drive share para imagem direta)
+        const normalizeImageUrl = (url) => {
+            if (!url) return null;
+            const driveMatch = url.match(/\/d\/([\w-]+)/);
+            if (driveMatch) return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
+            return url;
+        };
+        const normalizeCta = (url) => {
+            if (!url) return null;
+            return url.match(/^https?:\/\//) ? url : 'https://' + url;
+        };
+
+        const imageUrl = normalizeImageUrl(ad.image_url);
+        const ctaUrl = normalizeCta(ad.cta_url);
+
         overlay.innerHTML = `
             <style>
                 @keyframes fadeIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
@@ -54,7 +69,10 @@ const adService = {
                 #${progressId} { animation: shrink ${adDuration}ms linear forwards; }
             </style>
             <div style="background:#1c1c1e; border-radius:24px; overflow:hidden; width:100%; max-width:400px; color:white; box-shadow:0 25px 60px rgba(0,0,0,0.5);">
-                ${ad.image_url ? `<img src="${ad.image_url}" style="width:100%;height:200px;object-fit:cover;" onerror="this.style.display='none'" />` : ''}
+                ${imageUrl
+                ? `<img src="${imageUrl}" style="width:100%;height:200px;object-fit:cover;display:block;" onerror="this.style.display='none'" />`
+                : `<div style="width:100%;height:100px;background:linear-gradient(135deg,#6C63FF,#9d5cff);display:flex;align-items:center;justify-content:center;font-size:48px;">📢</div>`
+            }
                 <div style="padding:20px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                         <span style="background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;">📢 PUBLICIDADE</span>
@@ -63,7 +81,7 @@ const adService = {
                     <h3 style="font-size:20px;font-weight:800;margin-bottom:8px;">${ad.title}</h3>
                     ${ad.description ? `<p style="font-size:14px;opacity:0.75;margin-bottom:16px;line-height:1.5;">${ad.description}</p>` : ''}
                     <div style="display:flex;gap:10px;">
-                        ${ad.cta_url ? `<a href="${ad.cta_url}" target="_blank" style="flex:1;background:#6C63FF;color:white;border:none;padding:14px;border-radius:14px;font-weight:700;font-size:15px;text-align:center;text-decoration:none;">${ad.cta_text || 'Saiba mais'}</a>` : ''}
+                        ${ctaUrl ? `<a href="${ctaUrl}" target="_blank" rel="noopener" style="flex:1;background:#6C63FF;color:white;border:none;padding:14px;border-radius:14px;font-weight:700;font-size:15px;text-align:center;text-decoration:none;">${ad.cta_text || 'Saiba mais'}</a>` : ''}
                         <button id="ad-close-btn" style="background:rgba(255,255,255,0.1);color:white;border:none;padding:14px 18px;border-radius:14px;font-weight:600;cursor:pointer;font-size:15px;">✕</button>
                     </div>
                     <div style="margin-top:12px;height:3px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;">

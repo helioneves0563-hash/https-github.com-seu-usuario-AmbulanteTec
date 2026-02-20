@@ -430,7 +430,21 @@ async function initCustomersPage() {
 
             mainContainer.innerHTML = filtered.map(customer => {
                 const initials = customer.initials || customer.name.substring(0, 2).toUpperCase();
-                const hasOrder = customer.status === 'Active';
+
+                // Checar se há pelo menos 1 pedido aberto e 1 pedido finalizado
+                const openOrders = customer.orders?.filter(o => o.status === 'Aberto') || [];
+                const hasOrder = openOrders.length > 0;
+                const hasHistory = (customer.orders?.length || 0) > 0;
+
+                let tagStatus = '';
+                if (hasOrder) tagStatus = 'Com pedidos';
+                else if (hasHistory) tagStatus = 'Inativos';
+                else tagStatus = 'Novos';
+
+                // Aplica filtro visual de abas
+                if (currentFilter === 'Com pedidos' && !hasOrder) return '';
+                if (currentFilter === 'Novos' && tagStatus !== 'Novos') return '';
+                if (currentFilter === 'Inativos' && tagStatus !== 'Inativos') return '';
 
                 return `
                     <div class="group bg-surface-light dark:bg-surface-dark p-5 rounded-apple-2xl shadow-apple-card hover:shadow-apple-hover transition-all duration-300 cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-gray-700 relative overflow-hidden"

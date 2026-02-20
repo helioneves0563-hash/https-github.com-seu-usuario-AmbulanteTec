@@ -138,10 +138,10 @@ async function initDashboard() {
                 const btnEl = document.getElementById('highlight-btn');
                 const imgEl = document.getElementById('highlight-img');
 
-                if (badgeEl) badgeEl.textContent = highlight.badge_text;
+                if (badgeEl) badgeEl.textContent = highlight.tag;
                 if (titleEl) titleEl.textContent = highlight.title;
                 if (descEl) descEl.textContent = highlight.description;
-                if (btnEl) btnEl.textContent = highlight.button_text;
+                if (btnEl) btnEl.textContent = highlight.cta_text;
                 if (imgEl && highlight.image_url) imgEl.src = highlight.image_url;
             }
         }
@@ -1227,10 +1227,10 @@ window.app_openHighlightModal = async () => {
     if (window.highlightService) {
         const highlight = await window.highlightService.getHighlight();
         if (highlight) {
-            document.getElementById('edit-highlight-badge').value = highlight.badge_text || 'Promoção do Dia';
+            document.getElementById('edit-highlight-badge').value = highlight.tag || 'Promoção do Dia';
             document.getElementById('edit-highlight-title').value = highlight.title || '';
             document.getElementById('edit-highlight-desc').value = highlight.description || '';
-            document.getElementById('edit-highlight-btn').value = highlight.button_text || 'Ativar Promoção';
+            document.getElementById('edit-highlight-btn').value = highlight.cta_text || 'Ativar Promoção';
             document.getElementById('edit-highlight-img').value = highlight.image_url || '';
         }
     }
@@ -1250,10 +1250,10 @@ document.addEventListener('submit', async (e) => {
         const submitBtn = e.target.querySelector('button[type="submit"]');
 
         const highlightData = {
-            badge_text: document.getElementById('edit-highlight-badge').value,
+            tag: document.getElementById('edit-highlight-badge').value,
             title: document.getElementById('edit-highlight-title').value,
             description: document.getElementById('edit-highlight-desc').value,
-            button_text: document.getElementById('edit-highlight-btn').value,
+            cta_text: document.getElementById('edit-highlight-btn').value,
             image_url: document.getElementById('edit-highlight-img').value,
         };
 

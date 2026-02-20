@@ -448,9 +448,14 @@ async function initCustomersPage() {
                 const openOrders = customer.orders?.filter(o => o.status === 'Aberto') || [];
                 const hasOrder = openOrders.length > 0;
 
+                // Se o cliente tem pedido aberto, redireciona direito pra ele. Se não, vai poder editar o cliente.
+                const redirectUrl = hasOrder
+                    ? `order-details.html?id=${openOrders[0].id}`
+                    : `add-edit-customer.html?id=${customer.id}`;
+
                 return `
                     <div class="group bg-surface-light dark:bg-surface-dark p-5 rounded-apple-2xl shadow-apple-card hover:shadow-apple-hover transition-all duration-300 cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-gray-700 relative overflow-hidden"
-                         onclick="window.location.href='customer-details.html?id=${customer.id}'">
+                         onclick="window.location.href='${redirectUrl}'">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-4">
                                 <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-primary flex items-center justify-center text-white font-bold text-xl shadow-inner shrink-0">

@@ -452,6 +452,13 @@
         async function confirmOrder() {
             if (cart.length === 0) { alert('Adicione itens ao carrinho primeiro!'); return; }
 
+            // Perguntar se tem certeza em caso de cliente já ter enviado pedido na mesma sessão
+            const hasSentBefore = localStorage.getItem('portal_last_order_sent');
+            if (hasSentBefore === 'true') {
+                const proceed = confirm('Você já possui um pedido aberto. Tem certeza que deseja enviar estes novos itens para serem adicionados à sua conta?');
+                if (!proceed) return;
+            }
+
             const btn = document.getElementById('confirm-btn');
             if (btn.disabled) return;
 
@@ -459,7 +466,13 @@
             btn.textContent = '⏳ Enviando pedido...';
 
             try {
+                // Força um pequeno timeout apenas para a interface atualizar o botão antes da request pesada
+                await new Promise(resolve => setTimeout(resolve, 50));
+
                 await window.customerPortalService.createCustomerAndOrder(customerData, cart, establishmentId);
+
+                // Marca que já houve pedido na sessão
+                localStorage.setItem('portal_last_order_sent', 'true');
 
                 // Limpar carrinho
                 cart = [];

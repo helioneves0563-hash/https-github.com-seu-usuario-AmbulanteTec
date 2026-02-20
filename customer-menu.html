@@ -384,7 +384,7 @@
             } else if (existing) {
                 existing.quantity = newQty;
             } else {
-                cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1 });
+                cart.push({ id: product.id, name: product.name, price: product.price, quantity: 1, stock: product.stock || 999 });
             }
 
             localStorage.setItem('portal_cart', JSON.stringify(cart));
@@ -468,9 +468,7 @@
 
                 // Exibir propaganda (se houver adService disponível)
                 if (window.adService) {
-                    await window.adService.showAdModal(establishmentId, () => {
-                        // Após fechar propaganda, resetar
-                    });
+                    window.adService.showPostOrderAd(() => { });
                 } else {
                     alert('✅ Pedido confirmado! Obrigado!');
                 }
